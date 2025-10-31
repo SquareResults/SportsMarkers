@@ -3,6 +3,9 @@ import AboutSection from "@/components/AboutSection";
 import CtaCards from "@/components/CtaCards";
 import PricingSection from "@/components/PricingSection";
 import HowItWorks from "@/components/HowItWorks";
+import Testimonials from "@/components/Testimonials";
+import FeaturedAthletes from "@/components/FeaturedAthletes";
+import Faq from "@/components/Faq";
 
 export default function Home() {
   return (
@@ -12,6 +15,9 @@ export default function Home() {
       <CtaCards />
       <PricingSection />
       <HowItWorks />
+      <Testimonials />
+      <FeaturedAthletes />
+      <Faq />
     </div>
   );
 }
