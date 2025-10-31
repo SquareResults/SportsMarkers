@@ -1,3 +1,6 @@
+"use client";
+
+import React from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import {
@@ -7,6 +10,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
 
 const slides = [
   { sport: "Basketball", image: "/images/Basket.jpg" },
@@ -15,14 +19,24 @@ const slides = [
 ];
 
 export default function Hero() {
+  const plugin = React.useRef(
+    Autoplay({ delay: 8000, stopOnInteraction: true }),
+  );
+
   return (
     <section className="h-screen flex items-center justify-center text-center text-white">
-      <Carousel className="absolute inset-0 w-full h-full">
+      <Carousel
+        plugins={[plugin.current]}
+        className="absolute inset-0 w-full h-full"
+        opts={{ loop: true }}
+        onMouseEnter={plugin.current.stop}
+        onMouseLeave={plugin.current.reset}
+      >
         <CarouselContent>
           {slides.map((slide, index) => (
             <CarouselItem key={index}>
               <div
-                className="h-[560px] bg-cover bg-center"
+                className="h-screen bg-cover bg-center"
                 style={{ backgroundImage: `url(${slide.image})` }}
               ></div>
             </CarouselItem>
