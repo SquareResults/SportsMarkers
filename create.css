@@ -1,0 +1,141 @@
+:root{--blue:#2563eb;--green:#34a853;--ink:#0f172a;--muted:#64748b;--line:#e5e7eb;--surface:#f8fafc}
+*{box-sizing:border-box} html,body{margin:0;padding:0}
+body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:#fff}
+.container{max-width:1200px;margin:0 auto;padding:0 20px}
+.section{padding:64px 0}
+.small{font-size:14px} .muted{color:#6b7280}
+
+/* Pill Nav */
+.nav-bar{position:sticky;top:0;z-index:20;background:#f6f9fc;border-bottom:1px solid var(--line)}
+.nav-bar::after{content:"";display:block;height:4px;background:#173b7a}
+.nav-inner{display:flex;align-items:center;gap:20px;padding:12px 0}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);cursor:pointer}
+.brand img{height:40px} .brand span{font-weight:800;font-size:22px}
+
+/* RIGHT-ALIGNED links + tighter gap */
+.nav-main{
+  display:flex;gap:28px;margin-left:12px;flex:1;justify-content:flex-end;
+}
+.nav-link{font-weight:800;text-decoration:none;color:#0f172a;padding:12px 20px;border-radius:16px;transition:background .15s}
+.nav-link:hover{background:rgba(2,6,23,.06)} .nav-link.active{background:#274786;color:#fff}
+.nav-cta{
+  background:linear-gradient(135deg,#2fb86a 0%, #6fdb7f 100%);color:#fff;text-decoration:none;font-weight:800;
+  padding:12px 18px;border-radius:18px;white-space:nowrap;box-shadow:0 4px 14px rgba(47,184,106,.25);
+  margin-left:16px;
+}
+.nav-toggle{display:none;background:none;border:0;font-size:26px;margin-left:auto}
+@media(max-width:900px){.nav-toggle{display:block}.nav-cta{display:none}.nav-main{display:none;position:absolute;left:0;right:0;top:100%;background:#fff;border-bottom:1px solid var(--line);padding:12px 20px;flex-direction:column;gap:8px;justify-content:flex-start}.nav-bar.nav-open .nav-main{display:flex}.nav-link{padding:12px 14px}}
+
+.page-hero{background:var(--surface);border-bottom:1px solid var(--line);padding:28px 0;text-align:center}
+.page-hero h1{margin:0 0 6px;font-size:32px}
+.page-hero p{margin:0;color:var(--muted)}
+
+/* FORM */
+.form{max-width:960px;margin:0 auto}
+fieldset{border:1.5px solid #e2e8f0;border-radius:16px;background:#fff;padding:24px;margin:18px 0;box-shadow:0 1px 2px rgba(2,6,23,.04)}
+legend{display:block;font-size:28px;line-height:1.2;font-weight:800;color:#111827;margin:0 0 4px}
+.section-caption{margin:0 0 16px;color:#9aa3ae;font-weight:600}
+.hint{display:block;margin-top:6px;color:#94a3b8;font-size:13px}
+
+label{display:block;font-weight:800;color:#1f2937;margin:18px 0 8px}
+.form input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="submit"]),
+.form select,.form textarea,.form .file-input{
+  width:100%;border:1.5px solid #e2e8f0;border-radius:12px;background:#fff;padding:14px 14px;height:52px;outline:none;box-shadow:0 1px 0 rgba(2,6,23,.02) inset;transition:border-color .15s, box-shadow .15s;appearance:none;
+}
+.form textarea{min-height:110px;height:auto;padding:12px 14px}
+.form input::placeholder,.form textarea::placeholder{color:#94a3b8}
+.form input:focus,.form select:focus,.form textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.15)}
+
+.file-row{position:relative}
+.upload-icon{position:absolute;right:14px;top:50%;transform:translateY(-50%);pointer-events:none;opacity:.65}
+
+.form-actions{display:flex;gap:12px;flex-wrap:wrap;justify-content:flex-end;margin-top:10px}
+.form-primary{background:#34a853;color:#fff;border:0;border-radius:12px;padding:12px 16px;font-weight:800;cursor:pointer}
+.form-secondary{background:#fff;color:#2563eb;border:2px solid #2563eb;border-radius:12px;padding:10px 16px;font-weight:800;text-decoration:none;display:inline-block}
+
+footer{border-top:1px solid var(--line);padding:24px 0;background:#fff;color:#334155;margin-top:24px}
+.footer-inner{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.footer-left{display:flex;align-items:center;gap:10px}
+.footer-right{display:flex;gap:16px;align-items:center}
+.footer-right a{text-decoration:none;color:#0f172a;border:1px solid var(--line);padding:8px 12px;border-radius:999px}
+.footer-right a:hover{background:rgba(2,6,23,.05)}
+
+.nav-bar { border-bottom: 0 !important; }
+.nav-bar::after { content: none !important; }
+
+/* Header: soft separation (no line) */
+.nav-bar{
+  border-bottom: 0;                 /* no line */
+  background: rgba(255,255,255,.78);
+  -webkit-backdrop-filter: saturate(160%) blur(10px);
+  backdrop-filter: saturate(160%) blur(10px);
+  box-shadow: 0 2px 12px rgba(15,23,42,.06); /* gentle shadow */
+}
+
+/* Stronger shadow once you scroll a bit */
+.nav-bar.scrolled{
+  background: rgba(255,255,255,.95);
+  box-shadow: 0 6px 22px rgba(15,23,42,.12);
+}
+
+/* If you previously added an underline via ::after, keep it off */
+.nav-bar::after{ content:none; }
+
+/* --- Icon footer (shared across pages) --- */
+footer{
+  border-top:1px solid var(--line);
+  padding:24px 0;
+  background:#fff;
+  color:#334155;
+}
+.footer-inner{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+  flex-wrap:wrap;
+}
+.footer-left{display:flex;align-items:center;gap:10px}
+
+/* icon buttons */
+.footer-right{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+.footer-right .icon-btn{
+  display:inline-grid;
+  place-items:center;
+  width:40px; height:40px;
+  border-radius:999px;
+  color:#0f172a;                 /* icon color (currentColor) */
+  background:#fff;
+  border:1px solid var(--line);
+  box-shadow:0 4px 12px rgba(2,6,23,.06);
+  text-decoration:none;
+  transition:transform .15s, background .15s, color .15s, border-color .15s;
+}
+.footer-right .icon-btn:hover{
+  transform:translateY(-1px);
+  background:#f8fafc;
+  border-color:#cbd5e1;
+}
+.footer-right .icon-btn.linkedin:hover{ color:#0a66c2; }
+.footer-right .icon-btn.globe:hover{    color:#2563eb; }
+.footer-right .icon-btn.mail:hover{     color:#16a34a; }
+
+/* ensure any old text-link styling doesn't interfere */
+.footer-right a:not(.icon-btn){ all: unset; }
+
+/* Visually center the SVGs inside the round icon buttons */
+.footer-right .icon-btn svg{
+  display:block;              /* removes inline-svg baseline gap */
+  transform: translateX(-1px);/* nudge left a touch */
+}
+
+/* Envelope tends to look heavier on the right, nudge a bit more */
+.footer-right .icon-btn.mail svg{
+  transform: translateX(-1.5px);
+}
+
+
