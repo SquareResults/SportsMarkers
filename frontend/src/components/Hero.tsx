@@ -16,7 +16,7 @@ const slides = [
 
 export default function Hero() {
   return (
-    <section className="relative h-[560px] flex items-center justify-center text-center text-white">
+    <section className="h-screen flex items-center justify-center text-center text-white">
       <Carousel className="absolute inset-0 w-full h-full">
         <CarouselContent>
           {slides.map((slide, index) => (
