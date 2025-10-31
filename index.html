@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SportsMarkers — Showcase Your Athletic Journey</title>
+  <title>SportsMarker — Showcase Your Athletic Journey</title>
   <link rel="stylesheet" href="home.css" />
 </head>
 <body>
@@ -11,9 +11,9 @@
   <!-- HEADER / NAV -->
   <header class="nav-bar">
     <div class="container nav-inner">
-      <a class="brand" href="index.html" aria-label="SportsMarkers Home">
-        <img src="images/logo.svg" alt="SportsMarkers logo" onerror="this.style.display='none'"/>
-        <span>SportsMarkers</span>
+      <a class="brand" href="index.html" aria-label="SportsMarker Home">
+        <img src="images/logo.svg" alt="SportsMarker logo" onerror="this.style.display='none'"/>
+        <span>SportsMarker</span>
       </a>
 
       <nav class="nav-main" aria-label="Primary">
@@ -28,12 +28,9 @@
     </div>
   </header>
 
-  <!-- HERO (background slider + dots) -->
+  <!-- HERO -->
   <section class="hero" aria-label="Sports showcase">
     <div class="slides" id="heroBg">
-      <div class="slide active" data-sport="Basketball">
-        <img src="images/logo.svg" alt="" />
-      </div>
       <div class="slide active" data-sport="Basketball">
         <img src="images/Basket.jpg" alt="Basketball action" />
       </div>
@@ -54,7 +51,7 @@
 
     <div class="content">
       <h1>Showcase Your<br><span class="accent">Athletic Journey</span></h1>
-      <p class="lead">Create stunning portfolios, stay updated with sports news, and discover events near you</p>
+      <p class="lead">Create stunning portfolios, stay updated with sports news, and discover events near you.</p>
       <div class="actions">
         <a class="home-primary" href="create.html">Get Started →</a>
         <a class="home-secondary" href="Athletes.html">View Portfolios</a>
@@ -64,7 +61,7 @@
     <div class="hero-dots" id="heroDots" role="tablist" aria-label="Hero slides"></div>
   </section>
 
-  <!-- === ABOUT (image + features) === -->
+  <!-- ABOUT SPLIT -->
   <section class="section surface about-split" id="about">
     <div class="container about-split__grid">
       <figure class="photo-card">
@@ -74,31 +71,23 @@
       <div class="about-copy">
         <h2>About</h2>
         <p class="lede">
-        SportsMarkers is a SquareResults venture founded by Mark Burks. 
-        We help athletes turn their story into a standout digital portfolio blending media, stats, and achievements into a single link. Built for students and pros alike, SportsMarkers makes it effortless to showcase highlights, milestones, and personality in a clean, shareable format that coaches, recruiters, and fans can explore anywhere. 
-        Our mission is simple: transform raw accomplishments into a compelling narrative that opens doors.
+          We help athletes turn their story into a standout digital portfolio—blending media, stats, and achievements in a single link.
+          Built for students and pros alike, SportsMarker makes it effortless to showcase highlights, milestones, and personality in a clean,
+          shareable format that coaches and recruiters can explore anywhere.
         </p>
 
         <div class="feature-list">
           <div class="feature-row">
-            <div>
-              <div class="title">Clean, fast, mobile-first pages</div>
-              <div class="sub">Optimized for any device, loads instantly</div>
-            </div>
+            <div class="title">Clean, fast, mobile-first pages</div>
+            <div class="sub">Optimized for any device; loads instantly.</div>
           </div>
-
           <div class="feature-row">
-            <div>
-              <div class="title">Highlight videos, stats, and milestones</div>
-              <div class="sub">Showcase your best moments in one place</div>
-            </div>
+            <div class="title">Highlights, stats, and milestones</div>
+            <div class="sub">Showcase your best moments in one place.</div>
           </div>
-
           <div class="feature-row">
-            <div>
-              <div class="title">Shareable profile links</div>
-              <div class="sub">Easy for recruiters and coaches to access</div>
-            </div>
+            <div class="title">Shareable profile link</div>
+            <div class="sub">Easy for recruiters and coaches to access.</div>
           </div>
         </div>
       </div>
@@ -116,7 +105,7 @@
         </a>
         <a class="cta-card" href="Athletes.html">
           <div class="icon">🗂️</div>
-          <h3>View Our Portfolios</h3>
+          <h3>View Portfolios</h3>
           <p>Browse athletes by sport, position, year, and location.</p>
         </a>
         <a class="cta-card" href="contact.html">
@@ -128,7 +117,34 @@
     </div>
   </section>
 
-  <!-- HOW IT WORKS (now 5 steps with Payment as #2) -->
+  <!-- PRICING STRIP -->
+  <section class="section pricing-banner surface">
+    <div class="container">
+      <div class="pricing-card">
+        <div class="price-row">
+          <div class="price-tag">$299</div>
+          <div class="price-copy">
+            <h2>One-time portfolio setup</h2>
+            <p class="subcopy">
+              Includes design, setup, media upload, and a recruiter-ready layout.
+              14-day tweak guarantee. No subscription.
+            </p>
+          </div>
+          <a class="home-primary price-cta" href="create.html">Create your portfolio</a>
+        </div>
+
+        <ul class="perk-pills">
+          <li>Highlights & stats pages</li>
+          <li>Mobile-first & fast</li>
+          <li>Shareable link & QR</li>
+          <li>Trust checks ready</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- HOW IT WORKS (5 steps with Payment as #2) -->
   <section class="howitworks">
     <h2>How it works?</h2>
     <ol class="stepper">
@@ -164,7 +180,7 @@
     <div class="container footer-inner">
       <div class="footer-left">
         <img src="images/logo.svg" alt="SM" style="height:24px" onerror="this.style.display='none'"/>
-        <span>© 2025 SportsMarkers. All rights reserved.</span>
+        <span>© <span id="y"></span> SportsMarker. All rights reserved.</span>
       </div>
       <div class="footer-right">
         <a class="icon-btn linkedin"
@@ -188,9 +204,12 @@
           </svg>
         </a>
       </div>
-    </div> 
+    </div>
   </footer>
 
+  <script>
+    document.getElementById('y').textContent = new Date().getFullYear();
+  </script>
   <script src="main.js" defer></script>
 </body>
 </html>
