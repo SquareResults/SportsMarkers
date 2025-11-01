@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,7 +9,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -26,6 +25,11 @@ import {
 } from "@/components/ui/select";
 import { useSupabase } from "@/components/SupabaseProvider";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
+import { User, Mail, Phone, Link as LinkIcon, Trophy } from "lucide-react";
+
+const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 
 const formSchema = z.object({
   // Section 1
@@ -33,7 +37,13 @@ const formSchema = z.object({
   middleName: z.string().optional(),
   lastName: z.string().min(1, "Last name is required"),
   sport: z.string().min(1, "Sport is required"),
-  profilePicture: z.any().optional(),
+  profilePicture: z.any()
+    .refine((files: FileList | undefined) => {
+      if (typeof window === 'undefined' || !files) return true; // Skip validation on server or if no file
+      if (!(files instanceof FileList)) return false; // Not a FileList
+      return files.length === 0 || (files.length === 1 && ACCEPTED_IMAGE_TYPES.includes(files[0].type));
+    }, "Only .jpg, .jpeg, .png and .webp formats are supported.")
+    .optional(),
 
   // Section 2
   bio: z.string().optional(),
@@ -46,10 +56,16 @@ const formSchema = z.object({
 
   // Section 4
   skills: z.string().optional(),
-  videoLinks: z.string().optional(),
-  actionPhotos: z.any().optional(),
+  videoLinks: z.string().url("Please enter a valid URL").or(z.literal("")).optional(),
+  actionPhotos: z.any()
+    .refine((files: FileList | undefined) => {
+      if (typeof window === 'undefined' || !files) return true; // Skip validation on server or if no file
+      if (!(files instanceof FileList)) return false; // Not a FileList
+      return files.length === 0 || Array.from(files).every((file: any) => ACCEPTED_IMAGE_TYPES.includes(file.type));
+    }, "Only .jpg, .jpeg, .png and .webp formats are supported.")
+    .optional(),
   press: z.string().optional(),
-  mediaLinks: z.string().optional(),
+  mediaLinks: z.string().url("Please enter a valid URL").or(z.literal("")).optional(),
 
   // Section 5
   goals: z.string().optional(),
@@ -61,18 +77,24 @@ const formSchema = z.object({
 
   // Section 7
   contactEmail: z.string().email("Invalid email address"),
-  phone: z.string().optional(),
-  socials: z.string().optional(),
+  phone: z.string().regex(/^\+?[1-9]\d{1,14}$/, "Invalid phone number").or(z.literal("")).optional(),
+  socials: z.string().url("Please enter a valid URL").or(z.literal("")).optional(),
   hasLogo: z.string().optional(),
 
   // Section 8
-  logoUpload: z.any().optional(),
+  logoUpload: z.any()
+    .refine((files: FileList | undefined) => {
+      if (typeof window === 'undefined' || !files) return true; // Skip validation on server or if no file
+      if (!(files instanceof FileList)) return false; // Not a FileList
+      return files.length === 0 || (files.length === 1 && ACCEPTED_IMAGE_TYPES.includes(files[0].type));
+    }, "Only .jpg, .jpeg, .png and .webp formats are supported.")
+    .optional(),
 
   // Section 9
-  resume: z.any().optional(),
-  references: z.any().optional(),
-  certifications: z.any().optional(),
-  moreMedia: z.any().optional(),
+  resume: z.any().optional(), // Assuming resume can be any file type
+  references: z.any().optional(), // Assuming references can be any file type
+  certifications: z.any().optional(), // Assuming certifications can be any file type
+  moreMedia: z.any().optional(), // Assuming moreMedia can be any file type
   comments: z.string().optional(),
 });
 
@@ -81,10 +103,13 @@ export function CreateProfileForm({
   ...props
 }: React.ComponentProps<"div">) {
   const supabase = useSupabase();
+  const router = useRouter();
   const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+    mode: "onBlur",
     defaultValues: {
       firstName: "",
       middleName: "",
@@ -112,12 +137,110 @@ export function CreateProfileForm({
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    // For now, just log the values
-    console.log(values);
-    alert("Form submitted! Check the console for the form data.");
+    setLoading(true);
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      alert("You must be logged in to create a portfolio.");
+      setLoading(false);
+      return;
+    }
+
+    const uploadFile = async (file: File, bucket: string) => {
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+      const { data, error } = await supabase.storage.from(bucket).upload(fileName, file);
+      if (error) {
+        console.error("Error uploading file:", error);
+        return null;
+      }
+      return data.path;
+    };
+
+    let profilePictureUrl: string | null = null;
+    if (values.profilePicture && values.profilePicture.length > 0) {
+      profilePictureUrl = await uploadFile(values.profilePicture[0], "avatars");
+    }
+
+    let logoUrl: string | null = null;
+    if (values.logoUpload && values.logoUpload.length > 0) {
+      logoUrl = await uploadFile(values.logoUpload[0], "logos");
+    }
+
+    // ... handle other file uploads similarly
+
+    const portfolioData = {
+      user_id: user.id,
+      first_name: values.firstName,
+      middle_name: values.middleName,
+      last_name: values.lastName,
+      sport: values.sport,
+      profile_picture_url: profilePictureUrl,
+      bio: values.bio,
+      background: values.background,
+      experience: values.experience,
+      achievements: values.achievements,
+      timeline: values.timeline,
+      skills: values.skills,
+      video_links: values.videoLinks ? [values.videoLinks] : null,
+      press: values.press,
+      media_links: values.mediaLinks ? [values.mediaLinks] : null,
+      goals: values.goals,
+      opportunities: values.opportunities,
+      endorsements: values.endorsements,
+      merch: values.merch,
+      contact_email: values.contactEmail,
+      phone: values.phone,
+      socials: values.socials ? [values.socials] : null,
+      has_logo: values.hasLogo === "yes",
+      logo_url: logoUrl,
+      comments: values.comments,
+    };
+
+    const { error } = await supabase.from("portfolios").insert([portfolioData]);
+
+    if (error) {
+      alert(error.message);
+    } else {
+      alert("Portfolio created successfully!");
+      router.push("/profile");
+    }
+    setLoading(false);
   }
 
-  const nextStep = () => setStep((prev) => prev + 1);
+  const getFieldsForStep = (step: number) => {
+    switch (step) {
+      case 1:
+        return ["firstName", "lastName", "sport", "profilePicture"];
+      case 2:
+        return ["bio", "background"];
+      case 3:
+        return ["experience", "achievements", "timeline"];
+      case 4:
+        return ["skills", "videoLinks", "actionPhotos", "press", "mediaLinks"];
+      case 5:
+        return ["goals", "opportunities"];
+      case 6:
+        return ["endorsements", "merch"];
+      case 7:
+        return ["contactEmail", "phone", "socials", "hasLogo"];
+      case 8:
+        return ["logoUpload"];
+      case 9:
+        return ["resume", "references", "certifications", "moreMedia", "comments"];
+      default:
+        return [];
+    }
+  };
+
+  const nextStep = async () => {
+    const fields = getFieldsForStep(step);
+    const isValid = await form.trigger(fields as any);
+    if (isValid) {
+      setStep((prev) => prev + 1);
+    }
+  };
+
   const prevStep = () => setStep((prev) => prev - 1);
 
   return (
@@ -142,7 +265,12 @@ export function CreateProfileForm({
                       <FormItem>
                         <FormLabel>First Name *</FormLabel>
                         <FormControl>
-                          <Input placeholder="Your first name" {...field} />
+                          <InputGroup>
+                            <InputGroupAddon>
+                              <User />
+                            </InputGroupAddon>
+                            <InputGroupInput placeholder="Your first name" {...field} value={field.value ?? ""} />
+                          </InputGroup>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -155,10 +283,16 @@ export function CreateProfileForm({
                       <FormItem>
                         <FormLabel>Middle Name</FormLabel>
                         <FormControl>
-                          <Input
-                            placeholder="Your middle name (optional)"
-                            {...field}
-                          />
+                          <InputGroup>
+                            <InputGroupAddon>
+                              <User />
+                            </InputGroupAddon>
+                            <InputGroupInput
+                              placeholder="Your middle name (optional)"
+                              {...field}
+                              value={field.value ?? ""}
+                            />
+                          </InputGroup>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -171,7 +305,12 @@ export function CreateProfileForm({
                       <FormItem>
                         <FormLabel>Last Name *</FormLabel>
                         <FormControl>
-                          <Input placeholder="Your last name" {...field} />
+                          <InputGroup>
+                            <InputGroupAddon>
+                              <User />
+                            </InputGroupAddon>
+                            <InputGroupInput placeholder="Your last name" {...field} value={field.value ?? ""} />
+                          </InputGroup>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -184,10 +323,16 @@ export function CreateProfileForm({
                       <FormItem>
                         <FormLabel>Sport You Play *</FormLabel>
                         <FormControl>
-                          <Input
-                            placeholder="e.g., Basketball, Soccer, Track & Field"
-                            {...field}
-                          />
+                          <InputGroup>
+                            <InputGroupAddon>
+                              <Trophy />
+                            </InputGroupAddon>
+                            <InputGroupInput
+                              placeholder="e.g., Basketball, Soccer, Track & Field"
+                              {...field}
+                              value={field.value ?? ""}
+                            />
+                          </InputGroup>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -196,11 +341,18 @@ export function CreateProfileForm({
                   <FormField
                     control={form.control}
                     name="profilePicture"
-                    render={({ field }) => (
+                    render={({ field: { onChange, onBlur, name, ref } }) => (
                       <FormItem>
                         <FormLabel>Profile Picture</FormLabel>
                         <FormControl>
-                          <Input type="file" {...field} />
+                          <Input 
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => onChange(e.target.files)}
+                            onBlur={onBlur}
+                            name={name}
+                            ref={ref}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -221,7 +373,7 @@ export function CreateProfileForm({
                       <FormItem>
                         <FormLabel>Bio</FormLabel>
                         <FormControl>
-                          <Textarea placeholder="Tell us about yourself" {...field} />
+                          <Textarea placeholder="Tell us about yourself" {...field} value={field.value ?? ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -234,7 +386,7 @@ export function CreateProfileForm({
                       <FormItem>
                         <FormLabel>Background</FormLabel>
                         <FormControl>
-                          <Textarea placeholder="Your background" {...field} />
+                          <Textarea placeholder="Your background" {...field} value={field.value ?? ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -255,7 +407,7 @@ export function CreateProfileForm({
                       <FormItem>
                         <FormLabel>Experience</FormLabel>
                         <FormControl>
-                          <Textarea placeholder="Your experience" {...field} />
+                          <Textarea placeholder="Your experience" {...field} value={field.value ?? ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -268,7 +420,7 @@ export function CreateProfileForm({
                       <FormItem>
                         <FormLabel>Achievements</FormLabel>
                         <FormControl>
-                          <Textarea placeholder="Your achievements" {...field} />
+                          <Textarea placeholder="Your achievements" {...field} value={field.value ?? ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -281,7 +433,7 @@ export function CreateProfileForm({
                       <FormItem>
                         <FormLabel>Timeline</FormLabel>
                         <FormControl>
-                          <Textarea placeholder="Your timeline" {...field} />
+                          <Textarea placeholder="Your timeline" {...field} value={field.value ?? ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -300,7 +452,7 @@ export function CreateProfileForm({
                       <FormItem>
                         <FormLabel>Skills</FormLabel>
                         <FormControl>
-                          <Textarea placeholder="Your skills" {...field} />
+                          <Textarea placeholder="Your skills" {...field} value={field.value ?? ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -313,7 +465,12 @@ export function CreateProfileForm({
                       <FormItem>
                         <FormLabel>Video Links</FormLabel>
                         <FormControl>
-                          <Textarea placeholder="Links to your videos" {...field} />
+                          <InputGroup>
+                            <InputGroupAddon>
+                              <LinkIcon />
+                            </InputGroupAddon>
+                            <Textarea placeholder="Links to your videos" {...field} value={field.value ?? ""} />
+                          </InputGroup>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -322,11 +479,19 @@ export function CreateProfileForm({
                   <FormField
                     control={form.control}
                     name="actionPhotos"
-                    render={({ field }) => (
+                    render={({ field: { onChange, onBlur, name, ref } }) => (
                       <FormItem>
                         <FormLabel>Action Photos</FormLabel>
                         <FormControl>
-                          <Input type="file" {...field} multiple />
+                          <Input
+                            type="file"
+                            multiple
+                            accept="image/*"
+                            onChange={(e) => onChange(e.target.files)}
+                            onBlur={onBlur}
+                            name={name}
+                            ref={ref}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -339,7 +504,7 @@ export function CreateProfileForm({
                       <FormItem>
                         <FormLabel>Press</FormLabel>
                         <FormControl>
-                          <Textarea placeholder="Press links or mentions" {...field} />
+                          <Textarea placeholder="Press links or mentions" {...field} value={field.value ?? ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -352,7 +517,12 @@ export function CreateProfileForm({
                       <FormItem>
                         <FormLabel>Media Links</FormLabel>
                         <FormControl>
-                          <Textarea placeholder="Other media links" {...field} />
+                          <InputGroup>
+                            <InputGroupAddon>
+                              <LinkIcon />
+                            </InputGroupAddon>
+                            <Textarea placeholder="Other media links" {...field} value={field.value ?? ""} />
+                          </InputGroup>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -371,7 +541,7 @@ export function CreateProfileForm({
                       <FormItem>
                         <FormLabel>Goals</FormLabel>
                         <FormControl>
-                          <Textarea placeholder="Your goals" {...field} />
+                          <Textarea placeholder="Your goals" {...field} value={field.value ?? ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -384,7 +554,7 @@ export function CreateProfileForm({
                       <FormItem>
                         <FormLabel>Opportunities</FormLabel>
                         <FormControl>
-                          <Textarea placeholder="What opportunities are you looking for?" {...field} />
+                          <Textarea placeholder="What opportunities are you looking for?" {...field} value={field.value ?? ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -403,7 +573,7 @@ export function CreateProfileForm({
                       <FormItem>
                         <FormLabel>Endorsements</FormLabel>
                         <FormControl>
-                          <Textarea placeholder="Your endorsements" {...field} />
+                          <Textarea placeholder="Your endorsements" {...field} value={field.value ?? ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -416,7 +586,7 @@ export function CreateProfileForm({
                       <FormItem>
                         <FormLabel>Merchandise</FormLabel>
                         <FormControl>
-                          <Textarea placeholder="Links to your merchandise" {...field} />
+                          <Textarea placeholder="Links to your merchandise" {...field} value={field.value ?? ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -437,11 +607,17 @@ export function CreateProfileForm({
                       <FormItem>
                         <FormLabel>Contact Email *</FormLabel>
                         <FormControl>
-                          <Input
-                            type="email"
-                            placeholder="Your contact email"
-                            {...field}
-                          />
+                          <InputGroup>
+                            <InputGroupAddon>
+                              <Mail />
+                            </InputGroupAddon>
+                            <InputGroupInput
+                              type="email"
+                              placeholder="Your contact email"
+                              {...field}
+                              value={field.value ?? ""}
+                            />
+                          </InputGroup>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -454,11 +630,17 @@ export function CreateProfileForm({
                       <FormItem>
                         <FormLabel>Phone</FormLabel>
                         <FormControl>
-                          <Input
-                            type="tel"
-                            placeholder="Your phone number"
-                            {...field}
-                          />
+                          <InputGroup>
+                            <InputGroupAddon>
+                              <Phone />
+                            </InputGroupAddon>
+                            <InputGroupInput
+                              type="tel"
+                              placeholder="Your phone number"
+                              {...field}
+                              value={field.value ?? ""}
+                            />
+                          </InputGroup>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -471,10 +653,16 @@ export function CreateProfileForm({
                       <FormItem>
                         <FormLabel>Social Media</FormLabel>
                         <FormControl>
-                          <Textarea
-                            placeholder="Links to your social media profiles"
-                            {...field}
-                          />
+                          <InputGroup>
+                            <InputGroupAddon>
+                              <LinkIcon />
+                            </InputGroupAddon>
+                            <Textarea
+                              placeholder="Links to your social media profiles"
+                              {...field}
+                              value={field.value ?? ""}
+                            />
+                          </InputGroup>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -515,11 +703,18 @@ export function CreateProfileForm({
                   <FormField
                     control={form.control}
                     name="logoUpload"
-                    render={({ field }) => (
+                    render={({ field: { onChange, onBlur, name, ref } }) => (
                       <FormItem>
                         <FormLabel>Upload Your Logo</FormLabel>
                         <FormControl>
-                          <Input type="file" {...field} />
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => onChange(e.target.files)}
+                            onBlur={onBlur}
+                            name={name}
+                            ref={ref}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -536,11 +731,17 @@ export function CreateProfileForm({
                   <FormField
                     control={form.control}
                     name="resume"
-                    render={({ field }) => (
+                    render={({ field: { onChange, onBlur, name, ref } }) => (
                       <FormItem>
                         <FormLabel>Resume/CV</FormLabel>
                         <FormControl>
-                          <Input type="file" {...field} />
+                          <Input
+                            type="file"
+                            onChange={(e) => onChange(e.target.files)}
+                            onBlur={onBlur}
+                            name={name}
+                            ref={ref}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -549,11 +750,17 @@ export function CreateProfileForm({
                   <FormField
                     control={form.control}
                     name="references"
-                    render={({ field }) => (
+                    render={({ field: { onChange, onBlur, name, ref } }) => (
                       <FormItem>
                         <FormLabel>References</FormLabel>
                         <FormControl>
-                          <Input type="file" {...field} />
+                          <Input
+                            type="file"
+                            onChange={(e) => onChange(e.target.files)}
+                            onBlur={onBlur}
+                            name={name}
+                            ref={ref}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -562,11 +769,17 @@ export function CreateProfileForm({
                   <FormField
                     control={form.control}
                     name="certifications"
-                    render={({ field }) => (
+                    render={({ field: { onChange, onBlur, name, ref } }) => (
                       <FormItem>
                         <FormLabel>Certifications</FormLabel>
                         <FormControl>
-                          <Input type="file" {...field} />
+                          <Input
+                            type="file"
+                            onChange={(e) => onChange(e.target.files)}
+                            onBlur={onBlur}
+                            name={name}
+                            ref={ref}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -575,11 +788,18 @@ export function CreateProfileForm({
                   <FormField
                     control={form.control}
                     name="moreMedia"
-                    render={({ field }) => (
+                    render={({ field: { onChange, onBlur, name, ref } }) => (
                       <FormItem>
                         <FormLabel>More Media</FormLabel>
                         <FormControl>
-                          <Input type="file" {...field} multiple />
+                          <Input
+                            type="file"
+                            multiple
+                            onChange={(e) => onChange(e.target.files)}
+                            onBlur={onBlur}
+                            name={name}
+                            ref={ref}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -595,6 +815,7 @@ export function CreateProfileForm({
                           <Textarea
                             placeholder="Any additional comments"
                             {...field}
+                            value={field.value ?? ""}
                           />
                         </FormControl>
                         <FormMessage />
@@ -606,16 +827,16 @@ export function CreateProfileForm({
 
               <div className="flex justify-between">
                 {step > 1 && (
-                  <Button type="button" onClick={prevStep}>
+                  <Button type="button" onClick={prevStep} disabled={loading}>
                     Previous
                   </Button>
                 )}
                 {step < 9 && (
-                  <Button type="button" onClick={nextStep}>
+                  <Button type="button" onClick={nextStep} disabled={loading || !form.formState.isValid}>
                     Next
                   </Button>
                 )}
-                {step === 9 && <Button type="submit">Submit</Button>}
+                {step === 9 && <Button type="submit" disabled={loading}>{loading ? "Submitting..." : "Submit"}</Button>}
               </div>
             </form>
           </Form>

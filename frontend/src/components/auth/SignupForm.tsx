@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,8 @@ import { Input } from "@/components/ui/input";
 import { useSupabase } from "@/components/SupabaseProvider";
 import React, { useState } from "react";
 import Link from "next/link";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
+import { Mail, Lock, User } from "lucide-react";
 
 export function SignupForm({
   className,
@@ -34,6 +36,7 @@ export function SignupForm({
         data: {
           first_name: firstName,
           last_name: lastName,
+          full_name: `${firstName} ${lastName}`,
         },
       },
     });
@@ -55,46 +58,66 @@ export function SignupForm({
               </div>
               <Field>
                 <FieldLabel htmlFor="firstName">First Name</FieldLabel>
-                <Input
-                  id="firstName"
-                  type="text"
-                  placeholder="John"
-                  required
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                />
+                <InputGroup>
+                  <InputGroupAddon>
+                    <User />
+                  </InputGroupAddon>
+                  <InputGroupInput
+                    id="firstName"
+                    type="text"
+                    placeholder="John"
+                    required
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                  />
+                </InputGroup>
               </Field>
               <Field>
                 <FieldLabel htmlFor="lastName">Last Name</FieldLabel>
-                <Input
-                  id="lastName"
-                  type="text"
-                  placeholder="Doe"
-                  required
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                />
+                <InputGroup>
+                  <InputGroupAddon>
+                    <User />
+                  </InputGroupAddon>
+                  <InputGroupInput
+                    id="lastName"
+                    type="text"
+                    placeholder="Doe"
+                    required
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                  />
+                </InputGroup>
               </Field>
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="m@example.com"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
+                <InputGroup>
+                  <InputGroupAddon>
+                    <Mail />
+                  </InputGroupAddon>
+                  <InputGroupInput
+                    id="email"
+                    type="email"
+                    placeholder="m@example.com"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </InputGroup>
               </Field>
               <Field>
                 <FieldLabel htmlFor="password">Password</FieldLabel>
-                <Input
-                  id="password"
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
+                <InputGroup>
+                  <InputGroupAddon>
+                    <Lock />
+                  </InputGroupAddon>
+                  <InputGroupInput
+                    id="password"
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </InputGroup>
               </Field>
               <Field>
                 <Button type="submit">Sign Up</Button>

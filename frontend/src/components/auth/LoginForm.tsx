@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,8 @@ import { useSupabase } from "@/components/SupabaseProvider";
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
+import { Mail, Lock } from "lucide-react";
 
 export function LoginForm({
   className,
@@ -52,14 +54,19 @@ export function LoginForm({
               </div>
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="m@example.com"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
+                <InputGroup>
+                  <InputGroupAddon>
+                    <Mail />
+                  </InputGroupAddon>
+                  <InputGroupInput
+                    id="email"
+                    type="email"
+                    placeholder="m@example.com"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </InputGroup>
               </Field>
               <Field>
                 <div className="flex items-center">
@@ -71,13 +78,18 @@ export function LoginForm({
                     Forgot your password?
                   </a>
                 </div>
-                <Input
-                  id="password"
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
+                <InputGroup>
+                  <InputGroupAddon>
+                    <Lock />
+                  </InputGroupAddon>
+                  <InputGroupInput
+                    id="password"
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </InputGroup>
               </Field>
               <Field>
                 <Button type="submit">Login</Button>
