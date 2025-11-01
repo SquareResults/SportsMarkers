@@ -58,7 +58,7 @@ export default function Hero() {
         </p>
         <div className="mt-8 flex justify-center gap-4">
           <Button asChild size="lg">
-            <Link href="/create">Get Started →</Link>
+            <Link href="/login">Get Started →</Link>
           </Button>
           <Button asChild size="lg" variant="secondary">
             <Link href="/athletes">View Portfolios</Link>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { SupabaseProvider } from '@/components/SupabaseProvider';
 
 export const metadata: Metadata = {
   title: "SportsMarker — Showcase Your Athletic Journey",
@@ -17,9 +18,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased overflow-x-hidden">
-        <Header />
-        <main>{children}</main>
-        <Footer />
+        <SupabaseProvider>
+          <Header />
+          <main>{children}</main>
+          <Footer />
+        </SupabaseProvider>
       </body>
     </html>
   );
