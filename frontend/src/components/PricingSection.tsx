@@ -1,9 +1,33 @@
+'use client';
+
+import React, { useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import Section from "@/components/Section";
+import { useSupabase } from '@/components/SupabaseProvider';
 
 export default function PricingSection() {
+  const supabase = useSupabase();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsLoggedIn(!!session);
+    };
+
+    checkSession();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsLoggedIn(!!session);
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, [supabase]);
+
   return (
     <Section>
       <div className="py-12 sm:py-16 lg:py-20">
@@ -24,7 +48,7 @@ export default function PricingSection() {
               </div>
               <div className="mt-8 flex justify-center">
                 <Button asChild size="lg">
-                  <Link href="/create">Create your portfolio</Link>
+                  <Link href={isLoggedIn ? "/create" : "/login"}>Create your portfolio</Link>
                 </Button>
               </div>
               <div className="mt-8">

@@ -9,7 +9,9 @@ export default function Join() {
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold sm:text-4xl">Join the Movement</h2>
           <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
-            Whether you're an athlete, coach, recruiter, or fan—SportsMarkers is your home for discovery, connection, and growth. Because when talent meets opportunity, greatness follows.
+            Whether you're an athlete, coach, recruiter, or fan—SportsMarkers is
+            your home for discovery, connection, and growth. Because when talent
+            meets opportunity, greatness follows.
           </p>
           <div className="mt-8 flex justify-center gap-4">
             <Button asChild size="lg">

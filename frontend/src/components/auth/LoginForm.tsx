@@ -11,15 +11,17 @@ import {
   FieldSeparator,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-// import { useSupabase } from "@/components/SupabaseProvider"; // Temporarily commented out
+import { useSupabase } from "@/components/SupabaseProvider";
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const { supabase } = useSupabase();
+  const supabase = useSupabase();
+  const router = useRouter();
   console.log('LoginForm - Supabase client:', supabase);
 
   const [email, setEmail] = useState("");
@@ -28,8 +30,12 @@ export function LoginForm({
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) alert(error.message);
-    else alert("Logged in successfully!");
+    if (error) {
+      alert(error.message);
+    } else {
+      router.push('/');
+      router.refresh();
+    }
   };
 
   return (

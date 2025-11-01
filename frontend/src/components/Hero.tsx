@@ -1,27 +1,47 @@
-"use client";
+'use client';
 
-import React from "react";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import React, { useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-} from "@/components/ui/carousel";
-import Autoplay from "embla-carousel-autoplay";
+} from '@/components/ui/carousel';
+import Autoplay from 'embla-carousel-autoplay';
+import { useSupabase } from '@/components/SupabaseProvider';
 
 const slides = [
-  { sport: "Basketball", image: "/images/Basket.jpg" },
-  { sport: "Soccer", image: "/images/Football.jpg" },
-  { sport: "Track", image: "/images/Track.png" },
+  { sport: 'Basketball', image: '/images/Basket.jpg' },
+  { sport: 'Soccer', image: '/images/Football.jpg' },
+  { sport: 'Track', image: '/images/Track.png' },
 ];
 
 export default function Hero() {
   const plugin = React.useRef(
-    Autoplay({ delay: 8000, stopOnInteraction: true }),
+    Autoplay({ delay: 8000, stopOnInteraction: true })
   );
+  const supabase = useSupabase();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsLoggedIn(!!session);
+    };
+
+    checkSession();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsLoggedIn(!!session);
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, [supabase]);
 
   return (
     <section className="h-screen flex items-center justify-center text-center text-white">
@@ -57,9 +77,15 @@ export default function Hero() {
           discover events near you.
         </p>
         <div className="mt-8 flex justify-center gap-4">
-          <Button asChild size="lg">
-            <Link href="/login">Get Started →</Link>
-          </Button>
+          {isLoggedIn ? (
+            <Button asChild size="lg">
+              <Link href="/create">Create Portfolio</Link>
+            </Button>
+          ) : (
+            <Button asChild size="lg">
+              <Link href="/login">Get Started →</Link>
+            </Button>
+          )}
           <Button asChild size="lg" variant="secondary">
             <Link href="/athletes">View Portfolios</Link>
           </Button>

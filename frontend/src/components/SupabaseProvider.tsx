@@ -18,7 +18,7 @@ export function SupabaseProvider({ children }: { children: React.ReactNode }) {
   );
 
   const contextValue = { supabase };
-  console.log('SupabaseProvider - Context value being provided:', contextValue);
+
 
   return (
     <SupabaseContext.Provider value={contextValue}>
@@ -29,7 +29,7 @@ export function SupabaseProvider({ children }: { children: React.ReactNode }) {
 
 export function useSupabase(): SupabaseClient {
   const context = useContext(SupabaseContext);
-  console.log('useSupabase - Context received:', context);
+
   if (context === undefined) {
     throw new Error('useSupabase must be used within a SupabaseProvider');
   }
