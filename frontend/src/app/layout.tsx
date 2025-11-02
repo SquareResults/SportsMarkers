@@ -20,7 +20,9 @@ export default function RootLayout({
       <body className="antialiased overflow-x-hidden">
         <SupabaseProvider>
           <Header />
-          <main>{children}</main>
+          <main className="flex-grow">
+            <div className="container py-8">{children}</div>
+          </main>
           <Footer />
         </SupabaseProvider>
       </body>
