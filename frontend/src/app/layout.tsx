@@ -1,0 +1,31 @@
+import type { Metadata } from "next";
+import "./globals.css";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import { SupabaseProvider } from '@/components/SupabaseProvider';
+
+export const metadata: Metadata = {
+  title: "SportsMarker — Showcase Your Athletic Journey",
+  description:
+    "Create stunning portfolios, stay updated with sports news, and discover events near you.",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en">
+      <body className="antialiased overflow-x-hidden">
+        <SupabaseProvider>
+          <Header />
+          <main className="flex-grow">
+            <div className="container py-8">{children}</div>
+          </main>
+          <Footer />
+        </SupabaseProvider>
+      </body>
+    </html>
+  );
+}
