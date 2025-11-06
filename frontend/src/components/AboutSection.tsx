@@ -23,7 +23,7 @@ export default function AboutSection() {
               <p className="mt-4 text-lg text-gray-600 text-justify leading-relaxed">
                 We help athletes turn their story into a standout digital
                 portfolio—blending media, stats, and achievements in a single
-                link. Built for students and pros alike, SportsMarker makes it
+                link. Built for students and pros alike, SportsMarkers makes it
                 effortless to showcase highlights, milestones, and personality
                 in a clean, shareable format that coaches and recruiters can
                 explore anywhere.

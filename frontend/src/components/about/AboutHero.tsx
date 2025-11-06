@@ -6,7 +6,7 @@ import Link from 'next/link';
 export default function AboutHero() {
   return (
     <section
-      aria-label="About SportsMarker"
+      aria-label="About SportsMarkers"
       className="relative w-screen h-[86vh] min-h-[620px] overflow-hidden"
       style={{
         // full-bleed edge-to-edge even if the page uses a centered container

@@ -64,7 +64,7 @@ export function LoginForm({
               <div className="flex flex-col items-center gap-2 text-center">
                 <h1 className="text-2xl font-bold">Welcome back</h1>
                 <p className="text-muted-foreground text-balance">
-                  Login to your Acme Inc account
+                  Login to your SportsMarkers account
                 </p>
               </div>
 
@@ -158,7 +158,7 @@ export function LoginForm({
           <div className="bg-muted relative hidden md:block">
             <img
               src="/images/logo.svg"
-              alt="SportsMarker logo"
+              alt="SportsMarkers logo"
               className="absolute inset-0 h-full w-full object-contain p-10"
             />
           </div>

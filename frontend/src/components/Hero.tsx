@@ -18,8 +18,8 @@ type Slide =
   | { kind: 'photo'; sport: string; image: string };
 
 const slides: Slide[] = [
-  // First slide = SportsMarker logo
-  { kind: 'logo', sport: 'SportsMarker', image: '/images/logo.svg' },
+  // First slide = SportsMarkers logo
+  { kind: 'logo', sport: 'SportsMarkers', image: '/images/logo.svg' },
   // Other slides = regular photos
   { kind: 'photo', sport: 'Basketball', image: '/images/Basket.jpg' },
   { kind: 'photo', sport: 'Soccer', image: '/images/Football.jpg' },
@@ -98,7 +98,7 @@ export default function Hero() {
                   {/* Simple <img> works fine for SVG logos */}
                   <img
                     src={slide.image}
-                    alt="SportsMarker logo"
+                    alt="SportsMarkers logo"
                     className="h-auto w-[260px] sm:w-[360px] md:w-[480px] drop-shadow-[0_6px_28px_rgba(0,0,0,0.35)]"
                   />
                 </div>

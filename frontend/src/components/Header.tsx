@@ -70,7 +70,7 @@ export default function Header() {
       <div className="mx-auto flex h-16 max-w-[1200px] items-center gap-4 px-4 sm:h-20 sm:px-6">
         {/* Left: logo */}
         <Link href="/" className="flex items-center gap-3">
-          <Image src="/images/logo.svg" alt="SportsMarker" width={36} height={36} />
+          <Image src="/images/logo.svg" alt="SportsMarkers" width={36} height={36} />
           <span className="text-xl font-extrabold tracking-tight text-foreground">SportsMarkers</span>
         </Link>
 

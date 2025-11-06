@@ -199,7 +199,7 @@ export function SignupForm({
           <div className="bg-muted relative hidden md:block">
             <img
               src="/images/logo.svg"
-              alt="SportsMarker logo"
+              alt="SportsMarkers logo"
               className="absolute inset-0 h-full w-full object-contain p-10"
             />
           </div>

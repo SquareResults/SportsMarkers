@@ -5,7 +5,7 @@ export default function Home() {
     <main className="min-h-[calc(100vh-4rem)] px-6 py-16 flex items-center justify-center">
       <div className="max-w-2xl text-center">
         <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">
-          Welcome to SportsMarker
+          Welcome to SportsMarkers
         </h1>
         <p className="mt-4 text-slate-600">
           Build athlete portfolios, showcase achievements, and connect with opportunities.

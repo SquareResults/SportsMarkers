@@ -7,7 +7,7 @@ import { InfiniteScrollCarousel } from "@/components/ui/infinite-scroll-carousel
 const testimonials = [
   {
     quote:
-      "SportsMarker helped me get noticed by college recruiters. The portfolio was easy to create and looked amazing.",
+      "SportsMarkers helped me get noticed by college recruiters. The portfolio was easy to create and looked amazing.",
     name: "Alex Carter",
     title: "Basketball Player",
   },
@@ -37,7 +37,7 @@ const testimonials = [
   },
   {
     quote:
-      "My son got a scholarship thanks to the portfolio we built on SportsMarker. I can't thank them enough!",
+      "My son got a scholarship thanks to the portfolio we built on SportsMarkers. I can't thank them enough!",
     name: "Sarah Lee",
     title: "Parent of an Athlete",
   },
@@ -49,7 +49,7 @@ const testimonials = [
   },
   {
     quote:
-      "SportsMarker is the real deal. It connects you with opportunities you wouldn't find otherwise.",
+      "SportsMarkers is the real deal. It connects you with opportunities you wouldn't find otherwise.",
     name: "Jessica Green",
     title: "Volleyball Player",
   },
