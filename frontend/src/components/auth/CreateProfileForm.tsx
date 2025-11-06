@@ -39,8 +39,8 @@ const formSchema = z.object({
   sport: z.string().min(1, "Sport is required"),
   profilePicture: z.any()
     .refine((files: FileList | undefined) => {
-      if (typeof window === 'undefined' || !files) return true; // Skip validation on server or if no file
-      if (!(files instanceof FileList)) return false; // Not a FileList
+      if (typeof window === 'undefined' || !files) return true;
+      if (!(files instanceof FileList)) return false;
       return files.length === 0 || (files.length === 1 && ACCEPTED_IMAGE_TYPES.includes(files[0].type));
     }, "Only .jpg, .jpeg, .png and .webp formats are supported.")
     .optional(),
@@ -59,8 +59,8 @@ const formSchema = z.object({
   videoLinks: z.string().url("Please enter a valid URL").or(z.literal("")).optional(),
   actionPhotos: z.any()
     .refine((files: FileList | undefined) => {
-      if (typeof window === 'undefined' || !files) return true; // Skip validation on server or if no file
-      if (!(files instanceof FileList)) return false; // Not a FileList
+      if (typeof window === 'undefined' || !files) return true;
+      if (!(files instanceof FileList)) return false;
       return files.length === 0 || Array.from(files).every((file: any) => ACCEPTED_IMAGE_TYPES.includes(file.type));
     }, "Only .jpg, .jpeg, .png and .webp formats are supported.")
     .optional(),
@@ -84,17 +84,17 @@ const formSchema = z.object({
   // Section 8
   logoUpload: z.any()
     .refine((files: FileList | undefined) => {
-      if (typeof window === 'undefined' || !files) return true; // Skip validation on server or if no file
-      if (!(files instanceof FileList)) return false; // Not a FileList
+      if (typeof window === 'undefined' || !files) return true;
+      if (!(files instanceof FileList)) return false;
       return files.length === 0 || (files.length === 1 && ACCEPTED_IMAGE_TYPES.includes(files[0].type));
     }, "Only .jpg, .jpeg, .png and .webp formats are supported.")
     .optional(),
 
   // Section 9
-  resume: z.any().optional(), // Assuming resume can be any file type
-  references: z.any().optional(), // Assuming references can be any file type
-  certifications: z.any().optional(), // Assuming certifications can be any file type
-  moreMedia: z.any().optional(), // Assuming moreMedia can be any file type
+  resume: z.any().optional(),
+  references: z.any().optional(),
+  certifications: z.any().optional(),
+  moreMedia: z.any().optional(),
   comments: z.string().optional(),
 });
 
@@ -111,27 +111,11 @@ export function CreateProfileForm({
     resolver: zodResolver(formSchema),
     mode: "onBlur",
     defaultValues: {
-      firstName: "",
-      middleName: "",
-      lastName: "",
-      sport: "",
-      bio: "",
-      background: "",
-      experience: "",
-      achievements: "",
-      timeline: "",
-      skills: "",
-      videoLinks: "",
-      press: "",
-      mediaLinks: "",
-      goals: "",
-      opportunities: "",
-      endorsements: "",
-      merch: "",
-      contactEmail: "",
-      phone: "",
-      socials: "",
-      hasLogo: "",
+      firstName: "", middleName: "", lastName: "", sport: "",
+      bio: "", background: "", experience: "", achievements: "", timeline: "",
+      skills: "", videoLinks: "", press: "", mediaLinks: "",
+      goals: "", opportunities: "", endorsements: "", merch: "",
+      contactEmail: "", phone: "", socials: "", hasLogo: "",
       comments: "",
     },
   });
@@ -139,21 +123,13 @@ export function CreateProfileForm({
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-      alert("You must be logged in to create a portfolio.");
-      setLoading(false);
-      return;
-    }
+    if (!user) { alert("You must be logged in to create a portfolio."); setLoading(false); return; }
 
     const uploadFile = async (file: File, bucket: string) => {
       const fileExt = file.name.split(".").pop();
       const fileName = `${user.id}-${Date.now()}.${fileExt}`;
       const { data, error } = await supabase.storage.from(bucket).upload(fileName, file);
-      if (error) {
-        console.error("Error uploading file:", error);
-        return null;
-      }
+      if (error) { console.error("Error uploading file:", error); return null; }
       return data.path;
     };
 
@@ -166,8 +142,6 @@ export function CreateProfileForm({
     if (values.logoUpload && values.logoUpload.length > 0) {
       logoUrl = await uploadFile(values.logoUpload[0], "logos");
     }
-
-    // ... handle other file uploads similarly
 
     const portfolioData = {
       user_id: user.id,
@@ -198,161 +172,192 @@ export function CreateProfileForm({
     };
 
     const { error } = await supabase.from("portfolios").insert([portfolioData]);
-
-    if (error) {
-      alert(error.message);
-    } else {
-      alert("Portfolio created successfully!");
-      router.push("/profile");
-    }
+    if (error) alert(error.message);
+    else { alert("Portfolio created successfully!"); router.push("/profile"); }
     setLoading(false);
   }
 
-  const getFieldsForStep = (step: number) => {
-    switch (step) {
-      case 1:
-        return ["firstName", "lastName", "sport", "profilePicture"];
-      case 2:
-        return ["bio", "background"];
-      case 3:
-        return ["experience", "achievements", "timeline"];
-      case 4:
-        return ["skills", "videoLinks", "actionPhotos", "press", "mediaLinks"];
-      case 5:
-        return ["goals", "opportunities"];
-      case 6:
-        return ["endorsements", "merch"];
-      case 7:
-        return ["contactEmail", "phone", "socials", "hasLogo"];
-      case 8:
-        return ["logoUpload"];
-      case 9:
-        return ["resume", "references", "certifications", "moreMedia", "comments"];
-      default:
-        return [];
+  // --- UI helpers (titles & blurbs to match screenshots) ---
+  const sectionTitle = (n: number) => ({
+    1: "Basic Info",
+    2: "Bio & Background",
+    3: "Athletic Journey",
+    4: "Skills & Media",
+    5: "Goals & Opportunities",
+    6: "Events, Endorsements & Merch",
+    7: "Contact & Style Preferences",
+    8: "Upload your Personal Logo or Branding",
+    9: "Additional Uploads",
+  } as const)[n] ?? "";
+
+  const sectionBlurb = (n: number) => ({
+    1: "Tell us about yourself",
+    2: "Short intro and your background (schools/teams — include years).",
+    3: "Roles/positions & years, major achievements/stats, and milestones.",
+    4: "Key strengths, highlight videos/photos, and any press coverage.",
+    5: "Share your goals and whether you’re seeking opportunities.",
+    6: "List endorsements/awards and any merch or fan page links.",
+    7: "Provide contact details and any branding preferences.",
+    8: "Upload a logo or wordmark you use personally.",
+    9: "Attach your resume, references, certifications, or extra media.",
+  } as const)[n] ?? "";
+
+  const getFieldsForStep = (n: number) => {
+    switch (n) {
+      case 1: return ["firstName", "lastName", "sport", "profilePicture"];
+      case 2: return ["bio", "background"];
+      case 3: return ["experience", "achievements", "timeline"];
+      case 4: return ["skills", "videoLinks", "actionPhotos", "press", "mediaLinks"];
+      case 5: return ["goals", "opportunities"];
+      case 6: return ["endorsements", "merch"];
+      case 7: return ["contactEmail", "phone", "socials", "hasLogo"];
+      case 8: return ["logoUpload"];
+      case 9: return ["resume", "references", "certifications", "moreMedia", "comments"];
+      default: return [];
     }
   };
 
   const nextStep = async () => {
     const fields = getFieldsForStep(step);
-    const isValid = await form.trigger(fields as any);
-    if (isValid) {
-      setStep((prev) => prev + 1);
-    }
+    const ok = await form.trigger(fields as any);
+    if (ok) setStep((p) => p + 1);
   };
+  const prevStep = () => setStep((p) => p - 1);
 
-  const prevStep = () => setStep((prev) => prev - 1);
+  // shared input styles to match the mock
+  const inputClass =
+    "h-12 rounded-xl border border-slate-200 bg-white " +
+    "placeholder:text-slate-400 " +
+    "focus-visible:ring-2 focus-visible:ring-[#254485]/40 focus-visible:border-[#254485]";
+
+  const textareaClass =
+    "min-h-[140px] rounded-xl border border-slate-200 bg-white " +
+    "placeholder:text-slate-400 " +
+    "focus-visible:ring-2 focus-visible:ring-[#254485]/40 focus-visible:border-[#254485]";
+
+  const fileClass =
+    "rounded-xl border border-slate-200 bg-white " +
+    "file:mr-4 file:rounded-full file:border-0 file:bg-slate-100 file:px-4 file:py-2 " +
+    "hover:file:bg-slate-200 focus-visible:ring-2 focus-visible:ring-[#254485]/40";
+
+  const primaryPill =
+    "h-11 px-8 rounded-full font-semibold text-white shadow-lg " +
+    "bg-gradient-to-r from-emerald-400 to-green-600 " +
+    "hover:from-emerald-500 hover:to-green-700 transition";
+
+  const outlinePill =
+    "h-11 px-6 rounded-full font-semibold border border-slate-300 " +
+    "text-slate-700 hover:bg-slate-50 transition";
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card>
-        <CardHeader>
-          <CardTitle>Create Your Athlete Portfolio</CardTitle>
-          <p className="text-muted-foreground">Step {step} of 9</p>
+    <div className={cn("mx-auto max-w-5xl px-4 sm:px-6 lg:px-8", className)} {...props}>
+      {/* Page header band */}
+      <div className="mb-8 sm:mb-10 rounded-3xl border border-slate-200 bg-slate-50 p-6 sm:p-10 shadow-[0_12px_40px_-24px_rgba(2,6,23,0.5)] text-center">
+        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900">
+          Create Your Athlete Portfolio
+        </h1>
+        <p className="mt-2 text-slate-600">
+          Showcase your athletic journey and achievements.
+        </p>
+      </div>
+
+      {/* Step card */}
+      <Card className="rounded-3xl border border-slate-200 shadow-[0_16px_50px_-24px_rgba(2,6,23,0.35)]">
+        <CardHeader className="pb-0">
+          <CardTitle className="sr-only">Portfolio Form</CardTitle>
+          <div className="px-6 pt-6 sm:px-10">
+            <p className="text-sm font-semibold tracking-wide text-slate-500">
+              Section {step} of 9
+            </p>
+            <h2 className="mt-1 text-2xl sm:text-3xl font-black text-slate-900">
+              {sectionTitle(step)}
+            </h2>
+            <p className="mt-2 text-slate-600">{sectionBlurb(step)}</p>
+          </div>
         </CardHeader>
-        <CardContent>
+
+        <CardContent className="p-6 sm:p-10">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+              {/* SECTION 1 */}
               {step === 1 && (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium mb-4">
-                    Section 1: Basic Info
-                  </h3>
+                <div className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
                   <FormField
                     control={form.control}
                     name="firstName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>First Name *</FormLabel>
+                        <FormLabel className="font-semibold">First Name *</FormLabel>
                         <FormControl>
                           <InputGroup>
-                            <InputGroupAddon>
-                              <User />
-                            </InputGroupAddon>
-                            <InputGroupInput placeholder="Your first name" {...field} value={field.value ?? ""} />
+                            <InputGroupAddon><User /></InputGroupAddon>
+                            <InputGroupInput className={inputClass} placeholder="Your first name" {...field} value={field.value ?? ""} />
                           </InputGroup>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+
                   <FormField
                     control={form.control}
                     name="middleName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Middle Name</FormLabel>
+                        <FormLabel className="font-semibold">Middle Name</FormLabel>
                         <FormControl>
                           <InputGroup>
-                            <InputGroupAddon>
-                              <User />
-                            </InputGroupAddon>
-                            <InputGroupInput
-                              placeholder="Your middle name (optional)"
-                              {...field}
-                              value={field.value ?? ""}
-                            />
+                            <InputGroupAddon><User /></InputGroupAddon>
+                            <InputGroupInput className={inputClass} placeholder="Your middle name (optional)" {...field} value={field.value ?? ""} />
                           </InputGroup>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+
                   <FormField
                     control={form.control}
                     name="lastName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Last Name *</FormLabel>
+                        <FormLabel className="font-semibold">Last Name *</FormLabel>
                         <FormControl>
                           <InputGroup>
-                            <InputGroupAddon>
-                              <User />
-                            </InputGroupAddon>
-                            <InputGroupInput placeholder="Your last name" {...field} value={field.value ?? ""} />
+                            <InputGroupAddon><User /></InputGroupAddon>
+                            <InputGroupInput className={inputClass} placeholder="Your last name" {...field} value={field.value ?? ""} />
                           </InputGroup>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+
                   <FormField
                     control={form.control}
                     name="sport"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Sport You Play *</FormLabel>
+                        <FormLabel className="font-semibold">Sport You Play *</FormLabel>
                         <FormControl>
                           <InputGroup>
-                            <InputGroupAddon>
-                              <Trophy />
-                            </InputGroupAddon>
-                            <InputGroupInput
-                              placeholder="e.g., Basketball, Soccer, Track & Field"
-                              {...field}
-                              value={field.value ?? ""}
-                            />
+                            <InputGroupAddon><Trophy /></InputGroupAddon>
+                            <InputGroupInput className={inputClass} placeholder="e.g., Basketball, Soccer, Track & Field" {...field} value={field.value ?? ""} />
                           </InputGroup>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+
                   <FormField
                     control={form.control}
                     name="profilePicture"
                     render={({ field: { onChange, onBlur, name, ref } }) => (
                       <FormItem>
-                        <FormLabel>Profile Picture</FormLabel>
+                        <FormLabel className="font-semibold">Profile Picture</FormLabel>
                         <FormControl>
-                          <Input 
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => onChange(e.target.files)}
-                            onBlur={onBlur}
-                            name={name}
-                            ref={ref}
-                          />
+                          <Input type="file" accept="image/*" onChange={(e) => onChange(e.target.files)} onBlur={onBlur} name={name} ref={ref} className={fileClass} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -361,19 +366,17 @@ export function CreateProfileForm({
                 </div>
               )}
 
+              {/* SECTION 2 */}
               {step === 2 && (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium mb-4">
-                    Section 2: About You
-                  </h3>
+                <div className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
                   <FormField
                     control={form.control}
                     name="bio"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Bio</FormLabel>
+                        <FormLabel className="font-semibold">Short Bio / Athlete Introduction</FormLabel>
                         <FormControl>
-                          <Textarea placeholder="Tell us about yourself" {...field} value={field.value ?? ""} />
+                          <Textarea className={textareaClass} placeholder="Who are you? What motivates you as an athlete?" {...field} value={field.value ?? ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -384,9 +387,9 @@ export function CreateProfileForm({
                     name="background"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Background</FormLabel>
+                        <FormLabel className="font-semibold">Athletic/Educational Background</FormLabel>
                         <FormControl>
-                          <Textarea placeholder="Your background" {...field} value={field.value ?? ""} />
+                          <Textarea className={textareaClass} placeholder="List schools, programs, or teams you’ve been part of. Include years." {...field} value={field.value ?? ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -395,19 +398,17 @@ export function CreateProfileForm({
                 </div>
               )}
 
+              {/* SECTION 3 */}
               {step === 3 && (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium mb-4">
-                    Section 3: Athletic Journey
-                  </h3>
+                <div className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
                   <FormField
                     control={form.control}
                     name="experience"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Experience</FormLabel>
+                        <FormLabel className="font-semibold">Athletic Experience & Teams</FormLabel>
                         <FormControl>
-                          <Textarea placeholder="Your experience" {...field} value={field.value ?? ""} />
+                          <Textarea className={textareaClass} placeholder="e.g., Point Guard — Varsity Team (2021–2023), Team Captain (2023)" {...field} value={field.value ?? ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -418,9 +419,9 @@ export function CreateProfileForm({
                     name="achievements"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Achievements</FormLabel>
+                        <FormLabel className="font-semibold">Major Achievements & Stats</FormLabel>
                         <FormControl>
-                          <Textarea placeholder="Your achievements" {...field} value={field.value ?? ""} />
+                          <Textarea className={textareaClass} placeholder="e.g., State Championship 2023, MVP Award, 18.5 PPG average" {...field} value={field.value ?? ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -431,9 +432,9 @@ export function CreateProfileForm({
                     name="timeline"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Timeline</FormLabel>
+                        <FormLabel className="font-semibold">Athletic Timeline</FormLabel>
                         <FormControl>
-                          <Textarea placeholder="Your timeline" {...field} value={field.value ?? ""} />
+                          <Textarea className={textareaClass} placeholder="e.g., 2015: Started playing • 2018: First tournament • 2021: Varsity team" {...field} value={field.value ?? ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -442,86 +443,79 @@ export function CreateProfileForm({
                 </div>
               )}
 
+              {/* SECTION 4 */}
               {step === 4 && (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium mb-4">Section 4: Media</h3>
+                <div className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
                   <FormField
                     control={form.control}
                     name="skills"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Skills</FormLabel>
+                        <FormLabel className="font-semibold">Key Skills or Strengths in Your Sport</FormLabel>
                         <FormControl>
-                          <Textarea placeholder="Your skills" {...field} value={field.value ?? ""} />
+                          <Textarea className={textareaClass} placeholder="e.g., speed, leadership, accuracy, strategic thinking" {...field} value={field.value ?? ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+
                   <FormField
                     control={form.control}
                     name="videoLinks"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Video Links</FormLabel>
+                        <FormLabel className="font-semibold">Highlight Videos (YouTube links)</FormLabel>
                         <FormControl>
                           <InputGroup>
-                            <InputGroupAddon>
-                              <LinkIcon />
-                            </InputGroupAddon>
-                            <Textarea placeholder="Links to your videos" {...field} value={field.value ?? ""} />
+                            <InputGroupAddon><LinkIcon /></InputGroupAddon>
+                            <Textarea className={textareaClass} placeholder="Paste YouTube links (one per line)" {...field} value={field.value ?? ""} />
                           </InputGroup>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+
                   <FormField
                     control={form.control}
                     name="actionPhotos"
                     render={({ field: { onChange, onBlur, name, ref } }) => (
                       <FormItem>
-                        <FormLabel>Action Photos</FormLabel>
+                        <FormLabel className="font-semibold">Game or Action Photos</FormLabel>
                         <FormControl>
-                          <Input
-                            type="file"
-                            multiple
-                            accept="image/*"
-                            onChange={(e) => onChange(e.target.files)}
-                            onBlur={onBlur}
-                            name={name}
-                            ref={ref}
-                          />
+                          <Input type="file" multiple accept="image/*" onChange={(e) => onChange(e.target.files)} onBlur={onBlur} name={name} ref={ref} className={fileClass} />
                         </FormControl>
+                        <p className="text-sm text-slate-500">Upload JPG/PNG. You can add more later.</p>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+
                   <FormField
                     control={form.control}
                     name="press"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Press</FormLabel>
+                        <FormLabel className="font-semibold">Press or Media Mentions</FormLabel>
                         <FormControl>
-                          <Textarea placeholder="Press links or mentions" {...field} value={field.value ?? ""} />
+                          <Textarea className={textareaClass} placeholder="Any coverage or media mentions…" {...field} value={field.value ?? ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+
                   <FormField
                     control={form.control}
                     name="mediaLinks"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Media Links</FormLabel>
+                        <FormLabel className="font-semibold">Video/Photo/Media Uploads</FormLabel>
                         <FormControl>
                           <InputGroup>
-                            <InputGroupAddon>
-                              <LinkIcon />
-                            </InputGroupAddon>
-                            <Textarea placeholder="Other media links" {...field} value={field.value ?? ""} />
+                            <InputGroupAddon><LinkIcon /></InputGroupAddon>
+                            <Textarea className={textareaClass} placeholder="Paste any video or article links here" {...field} value={field.value ?? ""} />
                           </InputGroup>
                         </FormControl>
                         <FormMessage />
@@ -531,17 +525,17 @@ export function CreateProfileForm({
                 </div>
               )}
 
+              {/* SECTION 5 */}
               {step === 5 && (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium mb-4">Section 5: Goals</h3>
+                <div className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
                   <FormField
                     control={form.control}
                     name="goals"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Goals</FormLabel>
+                        <FormLabel className="font-semibold">What are your current goals as an athlete?</FormLabel>
                         <FormControl>
-                          <Textarea placeholder="Your goals" {...field} value={field.value ?? ""} />
+                          <Textarea className={textareaClass} placeholder='e.g., “Seeking scholarship”, “Join national team”, “Train professionally.”' {...field} value={field.value ?? ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -552,9 +546,9 @@ export function CreateProfileForm({
                     name="opportunities"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Opportunities</FormLabel>
+                        <FormLabel className="font-semibold">Are you looking for sponsorships or training opportunities?</FormLabel>
                         <FormControl>
-                          <Textarea placeholder="What opportunities are you looking for?" {...field} value={field.value ?? ""} />
+                          <Textarea className={textareaClass} placeholder="" {...field} value={field.value ?? ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -563,17 +557,17 @@ export function CreateProfileForm({
                 </div>
               )}
 
+              {/* SECTION 6 */}
               {step === 6 && (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium mb-4">Section 6: Brand</h3>
+                <div className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
                   <FormField
                     control={form.control}
                     name="endorsements"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Endorsements</FormLabel>
+                        <FormLabel className="font-semibold">Have you received any endorsements or awards?</FormLabel>
                         <FormControl>
-                          <Textarea placeholder="Your endorsements" {...field} value={field.value ?? ""} />
+                          <Textarea className={textareaClass} placeholder="Brands, sponsors, notable recognitions…" {...field} value={field.value ?? ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -584,9 +578,9 @@ export function CreateProfileForm({
                     name="merch"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Merchandise</FormLabel>
+                        <FormLabel className="font-semibold">Do you sell merchandise or have a fan page/shop?</FormLabel>
                         <FormControl>
-                          <Textarea placeholder="Links to your merchandise" {...field} value={field.value ?? ""} />
+                          <Textarea className={textareaClass} placeholder="Include links or descriptions…" {...field} value={field.value ?? ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -595,28 +589,19 @@ export function CreateProfileForm({
                 </div>
               )}
 
+              {/* SECTION 7 */}
               {step === 7 && (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium mb-4">
-                    Section 7: Contact
-                  </h3>
+                <div className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
                   <FormField
                     control={form.control}
                     name="contactEmail"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Contact Email *</FormLabel>
+                        <FormLabel className="font-semibold">Email Address for Contact *</FormLabel>
                         <FormControl>
                           <InputGroup>
-                            <InputGroupAddon>
-                              <Mail />
-                            </InputGroupAddon>
-                            <InputGroupInput
-                              type="email"
-                              placeholder="Your contact email"
-                              {...field}
-                              value={field.value ?? ""}
-                            />
+                            <InputGroupAddon><Mail /></InputGroupAddon>
+                            <InputGroupInput className={inputClass} type="email" placeholder="you@example.com" {...field} value={field.value ?? ""} />
                           </InputGroup>
                         </FormControl>
                         <FormMessage />
@@ -628,18 +613,11 @@ export function CreateProfileForm({
                     name="phone"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Phone</FormLabel>
+                        <FormLabel className="font-semibold">Phone Number</FormLabel>
                         <FormControl>
                           <InputGroup>
-                            <InputGroupAddon>
-                              <Phone />
-                            </InputGroupAddon>
-                            <InputGroupInput
-                              type="tel"
-                              placeholder="Your phone number"
-                              {...field}
-                              value={field.value ?? ""}
-                            />
+                            <InputGroupAddon><Phone /></InputGroupAddon>
+                            <InputGroupInput className={inputClass} type="tel" placeholder="+1 (555) 123-4567" {...field} value={field.value ?? ""} />
                           </InputGroup>
                         </FormControl>
                         <FormMessage />
@@ -651,17 +629,11 @@ export function CreateProfileForm({
                     name="socials"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Social Media</FormLabel>
+                        <FormLabel className="font-semibold">Social Media Links</FormLabel>
                         <FormControl>
                           <InputGroup>
-                            <InputGroupAddon>
-                              <LinkIcon />
-                            </InputGroupAddon>
-                            <Textarea
-                              placeholder="Links to your social media profiles"
-                              {...field}
-                              value={field.value ?? ""}
-                            />
+                            <InputGroupAddon><LinkIcon /></InputGroupAddon>
+                            <Textarea className={textareaClass} placeholder="Instagram, X/Twitter, TikTok… one per line" {...field} value={field.value ?? ""} />
                           </InputGroup>
                         </FormControl>
                         <FormMessage />
@@ -673,13 +645,10 @@ export function CreateProfileForm({
                     name="hasLogo"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Do you have a personal logo?</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
+                        <FormLabel className="font-semibold">Do you have a personal logo or branding?</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
-                            <SelectTrigger>
+                            <SelectTrigger className="h-12 rounded-xl border border-slate-200 bg-white focus-visible:ring-2 focus-visible:ring-[#254485]/40">
                               <SelectValue placeholder="Select an option" />
                             </SelectTrigger>
                           </FormControl>
@@ -695,26 +664,17 @@ export function CreateProfileForm({
                 </div>
               )}
 
+              {/* SECTION 8 */}
               {step === 8 && (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium mb-4">
-                    Section 8: Branding
-                  </h3>
+                <div className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
                   <FormField
                     control={form.control}
                     name="logoUpload"
                     render={({ field: { onChange, onBlur, name, ref } }) => (
                       <FormItem>
-                        <FormLabel>Upload Your Logo</FormLabel>
+                        <FormLabel className="font-semibold">Upload a Logo or Wordmark</FormLabel>
                         <FormControl>
-                          <Input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => onChange(e.target.files)}
-                            onBlur={onBlur}
-                            name={name}
-                            ref={ref}
-                          />
+                          <Input type="file" accept="image/*" onChange={(e) => onChange(e.target.files)} onBlur={onBlur} name={name} ref={ref} className={fileClass} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -723,100 +683,74 @@ export function CreateProfileForm({
                 </div>
               )}
 
+              {/* SECTION 9 */}
               {step === 9 && (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium mb-4">
-                    Section 9: Extras
-                  </h3>
+                <div className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
                   <FormField
                     control={form.control}
                     name="resume"
                     render={({ field: { onChange, onBlur, name, ref } }) => (
                       <FormItem>
-                        <FormLabel>Resume/CV</FormLabel>
+                        <FormLabel className="font-semibold">Resume/CV</FormLabel>
                         <FormControl>
-                          <Input
-                            type="file"
-                            onChange={(e) => onChange(e.target.files)}
-                            onBlur={onBlur}
-                            name={name}
-                            ref={ref}
-                          />
+                          <Input type="file" onChange={(e) => onChange(e.target.files)} onBlur={onBlur} name={name} ref={ref} className={fileClass} />
                         </FormControl>
+                        <p className="text-sm text-slate-500">PDF preferred.</p>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+
                   <FormField
                     control={form.control}
                     name="references"
                     render={({ field: { onChange, onBlur, name, ref } }) => (
                       <FormItem>
-                        <FormLabel>References</FormLabel>
+                        <FormLabel className="font-semibold">Reference letters</FormLabel>
                         <FormControl>
-                          <Input
-                            type="file"
-                            onChange={(e) => onChange(e.target.files)}
-                            onBlur={onBlur}
-                            name={name}
-                            ref={ref}
-                          />
+                          <Input type="file" onChange={(e) => onChange(e.target.files)} onBlur={onBlur} name={name} ref={ref} className={fileClass} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+
                   <FormField
                     control={form.control}
                     name="certifications"
                     render={({ field: { onChange, onBlur, name, ref } }) => (
                       <FormItem>
-                        <FormLabel>Certifications</FormLabel>
+                        <FormLabel className="font-semibold">Certifications</FormLabel>
                         <FormControl>
-                          <Input
-                            type="file"
-                            onChange={(e) => onChange(e.target.files)}
-                            onBlur={onBlur}
-                            name={name}
-                            ref={ref}
-                          />
+                          <Input type="file" onChange={(e) => onChange(e.target.files)} onBlur={onBlur} name={name} ref={ref} className={fileClass} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+
                   <FormField
                     control={form.control}
                     name="moreMedia"
                     render={({ field: { onChange, onBlur, name, ref } }) => (
                       <FormItem>
-                        <FormLabel>More Media</FormLabel>
+                        <FormLabel className="font-semibold">Additional photos or media</FormLabel>
                         <FormControl>
-                          <Input
-                            type="file"
-                            multiple
-                            onChange={(e) => onChange(e.target.files)}
-                            onBlur={onBlur}
-                            name={name}
-                            ref={ref}
-                          />
+                          <Input type="file" multiple onChange={(e) => onChange(e.target.files)} onBlur={onBlur} name={name} ref={ref} className={fileClass} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+
                   <FormField
                     control={form.control}
                     name="comments"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Comments</FormLabel>
+                        <FormLabel className="font-semibold">Additional Comments</FormLabel>
                         <FormControl>
-                          <Textarea
-                            placeholder="Any additional comments"
-                            {...field}
-                            value={field.value ?? ""}
-                          />
+                          <Textarea className={textareaClass} placeholder="Anything else coaches/recruiters should know…" {...field} value={field.value ?? ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -825,18 +759,22 @@ export function CreateProfileForm({
                 </div>
               )}
 
-              <div className="flex justify-between">
+              {/* Actions */}
+              <div className="flex items-center justify-between pt-2">
                 {step > 1 && (
-                  <Button type="button" onClick={prevStep} disabled={loading}>
+                  <Button type="button" onClick={prevStep} disabled={loading} className={outlinePill}>
                     Previous
                   </Button>
                 )}
-                {step < 9 && (
-                  <Button type="button" onClick={nextStep} disabled={loading || !form.formState.isValid}>
+                {step < 9 ? (
+                  <Button type="button" onClick={nextStep} disabled={loading} className={primaryPill}>
                     Next
                   </Button>
+                ) : (
+                  <Button type="submit" disabled={loading} className={primaryPill}>
+                    {loading ? "Submitting..." : "Submit"}
+                  </Button>
                 )}
-                {step === 9 && <Button type="submit" disabled={loading}>{loading ? "Submitting..." : "Submit"}</Button>}
               </div>
             </form>
           </Form>

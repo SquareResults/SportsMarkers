@@ -28,7 +28,7 @@ const allAthletes = [
     position: "Sprinter",
     location: "Phoenix, AZ",
     avatar: "/images/Sample.jpg",
-    url: "#",
+    url: "https://trial.theradarlist.com/",
   },
 ];
 
