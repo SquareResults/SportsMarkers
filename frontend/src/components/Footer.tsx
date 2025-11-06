@@ -10,7 +10,7 @@ export default function Footer() {
       <div className="container grid grid-cols-1 md:grid-cols-5 gap-8">
         <div className="col-span-1 md:col-span-2 text-center md:text-left">
           <Link href="/" className="flex items-center space-x-2 mb-4 justify-center md:justify-start">
-            <Image src="/images/logo.svg" alt="SportsMarkers" width={32} height={32} />
+            <Image src="/images/logo.png" alt="SportsMarkers" width={32} height={32} />
             <span className="font-bold text-lg">SportsMarkers</span>
           </Link>
           <p className="text-sm text-muted-foreground mb-4">

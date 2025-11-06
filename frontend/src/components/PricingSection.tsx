@@ -1,70 +1,104 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import Link from "next/link";
-import Section from "@/components/Section";
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from '@/components/ui/card';
+import Section from '@/components/Section';
 import { useSupabase } from '@/components/SupabaseProvider';
-import { CheckIcon } from 'lucide-react';
+import { Check, ShieldCheck, Sparkles } from 'lucide-react';
 
 export default function PricingSection() {
   const supabase = useSupabase();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    const checkSession = async () => {
+    let unsub: (() => void) | undefined;
+
+    (async () => {
       const { data: { session } } = await supabase.auth.getSession();
       setIsLoggedIn(!!session);
-    };
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_, s) =>
+        setIsLoggedIn(!!s)
+      );
+      unsub = () => subscription.unsubscribe();
+    })();
 
-    checkSession();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      setIsLoggedIn(!!session);
-    });
-
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
+    return () => { unsub?.(); };
   }, [supabase]);
 
   return (
     <Section>
-      <div className="py-12 sm:py-16 lg:py-20">
-        <div className="container mx-auto px-4">
-          <Card className="max-w-lg mx-auto">
-            <CardHeader className="text-center">
-              <h2 className="text-3xl font-bold sm:text-4xl">One-Time Portfolio Setup</h2>
-              <p className="text-7xl font-bold text-blue-500 mt-4">$299</p>
-              <p className="mt-2 text-lg text-gray-600">No subscription, no hidden fees.</p>
-            </CardHeader>
-            <CardContent className="p-8">
-              <p className="text-lg text-gray-600 text-center mb-8">
-                Includes design, setup, media upload, and a recruiter-ready layout. 14-day tweak guarantee.
+      {/* subtle gradient background to make the card pop */}
+      <div className="relative py-16 sm:py-20 lg:py-24">
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-blue-50/60 via-white to-white" />
+
+        <div className="container relative mx-auto px-4">
+          <Card className="mx-auto w-full max-w-3xl overflow-hidden rounded-3xl border-0 shadow-[0_20px_60px_rgba(0,0,0,0.08)] ring-1 ring-black/5">
+            {/* Header */}
+            <CardHeader className="space-y-6 p-8 pb-4 text-center sm:p-10 sm:pb-6">
+              <div className="mx-auto inline-flex items-center gap-2 rounded-full bg-blue-600/10 px-3 py-1 text-sm font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20">
+                <Sparkles className="h-4 w-4" />
+                One-Time Portfolio Setup
+              </div>
+
+              <h2 className="text-balance text-3xl font-extrabold sm:text-4xl">
+                Everything you need to launch a recruiter-ready profile
+              </h2>
+
+              {/* Price */}
+              <div className="flex items-end justify-center gap-2">
+                <span className="translate-y-2 text-3xl font-bold text-blue-500/90">$</span>
+                <span className="text-7xl font-extrabold leading-none text-blue-600 sm:text-8xl">
+                  299
+                </span>
+                <span className="pb-3 text-lg text-blue-500/80">USD</span>
+              </div>
+
+              <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
+                No subscription, no hidden fees. Includes setup, media upload, and a recruiter-ready layout with a 14-day tweak guarantee.
               </p>
-              <ul className="space-y-4">
-                <li className="flex items-center gap-4">
-                  <CheckIcon className="h-6 w-6 text-blue-500" />
-                  <span className="text-lg">Highlights & stats pages</span>
-                </li>
-                <li className="flex items-center gap-4">
-                  <CheckIcon className="h-6 w-6 text-blue-500" />
-                  <span className="text-lg">Mobile-first & fast</span>
-                </li>
-                <li className="flex items-center gap-4">
-                  <CheckIcon className="h-6 w-6 text-blue-500" />
-                  <span className="text-lg">Shareable link & QR code</span>
-                </li>
-                <li className="flex items-center gap-4">
-                  <CheckIcon className="h-6 w-6 text-blue-500" />
-                  <span className="text-lg">Trust checks ready</span>
-                </li>
+            </CardHeader>
+
+            {/* Content */}
+            <CardContent className="px-6 pb-2 sm:px-10">
+              <ul className="mx-auto grid max-w-2xl gap-4 sm:grid-cols-2">
+                {[
+                  'Highlights & stats pages',
+                  'Mobile-first & fast',
+                  'Shareable link & QR code',
+                  'Trust checks ready',
+                ].map((item) => (
+                  <li key={item} className="flex items-start gap-3 rounded-2xl bg-blue-50/40 p-3 ring-1 ring-inset ring-blue-100">
+                    <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-white">
+                      <Check className="h-4 w-4" />
+                    </span>
+                    <span className="text-base font-medium">{item}</span>
+                  </li>
+                ))}
               </ul>
+
+              <div className="mt-6 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                <ShieldCheck className="h-4 w-4 text-green-600" />
+                <span>Secure & private. We only use your media for your portfolio.</span>
+              </div>
             </CardContent>
-            <CardFooter className="flex justify-center">
-              <Button asChild size="lg" className="w-full">
-                <Link href={isLoggedIn ? "/create" : "/login"}>Create Your Portfolio</Link>
+
+            {/* CTA */}
+            <CardFooter className="px-6 pb-8 pt-2 sm:px-10">
+              <Button
+                asChild
+                size="lg"
+                className="mx-auto w-full max-w-md rounded-full bg-gradient-to-b from-[#32D071] to-[#20B85E] text-white shadow-md hover:opacity-95"
+              >
+                <Link href={isLoggedIn ? '/create' : '/login'}>
+                  {isLoggedIn ? 'Create Your Portfolio' : 'Get Started — $299'}
+                </Link>
               </Button>
             </CardFooter>
           </Card>

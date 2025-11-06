@@ -198,7 +198,7 @@ export function SignupForm({
           {/* Right column image -> logo */}
           <div className="bg-muted relative hidden md:block">
             <img
-              src="/images/logo.svg"
+              src="/images/logo.png"
               alt="SportsMarkers logo"
               className="absolute inset-0 h-full w-full object-contain p-10"
             />

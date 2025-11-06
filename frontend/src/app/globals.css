@@ -1,9 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-/* @custom-variant is not recognized by the current toolchain; define custom variants in tailwind.config.js instead,
-   or rely on the .dark and .light class selectors (see the .dark { ... } block below). */
-
 /* ---------------------------
    Design tokens (unchanged)
 --------------------------- */
@@ -71,7 +68,11 @@
 
   /* Centered layout knobs */
   --page-max: 1500px;
-  --side-pad: clamp(0px, 0vw, 0px);
+  /* side padding now fluid for better adaptability */
+  --side-pad: clamp(16px, 4vw, 28px);
+
+  /* header height for offsets (tune if your header changes) */
+  --header-h: 64px;
 }
 
 .dark {
@@ -193,35 +194,42 @@
 }
 
 /* ---------------------------
-   Base + centered layout
+   Base
 --------------------------- */
+html, body, #__next {
+  height: 100%;
+}
+
 body {
   letter-spacing: var(--tracking-normal);
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  /* eliminate horizontal scrollbars at any zoom */
+  overflow-x: hidden;
 }
-@layer base {
-  /* Apply focus styles to a selector rather than leaving stray braces */
-  :focus, :focus-visible {
-    outline: none !important;
-    border-color: var(--color-border); /* keep your border token */
-  }
 
-  body {
-    background-color: var(--color-background);
-    color: var(--color-foreground);
-  }
+/* media elements behave responsively by default */
+img, svg, video, canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
 
-  main, section, header, footer, nav, .container {
-    max-width: var(--page-max);
-    margin-left: auto;
-    margin-right: auto;
-    padding-left: var(--side-pad);
-    padding-right: var(--side-pad);
-  }
+/* Centering container only (do not constrain every section) */
+.container {
+  width: min(100%, var(--page-max));
+  margin-inline: auto;
+  padding-inline: var(--side-pad);
+}
 
+/* Keep your focus style but scoped properly */
+:focus, :focus-visible {
+  outline: none !important;
+  border-color: var(--color-border);
 }
 
 /* ---------------------------
-   Hero centering helpers
+   Hero helpers (full-bleed capable)
 --------------------------- */
 .hero,
 section.hero,
@@ -233,20 +241,43 @@ header.hero,
   align-items: center !important;
   text-align: center !important;
   width: 100%;
-  min-height: min(86vh, 900px);
+  /* Use svh for mobile browser chrome, fallback to vh */
+  min-height: min(92svh, 900px);
 }
 
-/* Buttons/CTA inside hero or section headers */
-.hero .btn, .hero button, .hero a,
-.section-header .btn, .section-header button, .section-header a {
-  margin-left: auto !important;
-  margin-right: auto !important;
+/* If the hero sits under a sticky header, bump it up */
+.offset-header {
+  margin-top: calc(-1 * var(--header-h));
 }
 
-/* ---------------------------
-   Utility centering classes
---------------------------- */
+/* Full-bleed utility for sections that should span edge-to-edge */
+.full-bleed {
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+}
+
+/* ---------- Fluid typography helpers ---------- */
+.fluid-title {
+  font-size: clamp(2rem, 5.5vw + 0.25rem, 4.5rem);
+  line-height: 1.05;
+  font-weight: 800;
+}
+
+.fluid-lead {
+  font-size: clamp(1rem, 1.1vw + 0.75rem, 1.25rem);
+  line-height: 1.6;
+}
+
+/* ---------- Justified paragraph helper ---------- */
+.text-justify {
+  text-align: justify;
+  text-justify: inter-word;
+}
+
+/* ---------- Balance text utility ---------- */
 @layer utilities {
+  .text-balance { text-wrap: balance; }
+
   .mx-auto { margin-left: auto !important; margin-right: auto !important; }
 
   .flex-center {
@@ -260,13 +291,17 @@ header.hero,
     place-items: center !important;
   }
 
-  /* If something was forced left earlier in markup */
   .force-center {
     text-align: center !important;
     justify-content: center !important;
     align-items: center !important;
     place-content: center !important;
     place-items: center !important;
+  }
+
+  /* top-only soft shadow for removing “black borders” look */
+  .shadow-top-soft {
+    box-shadow: 0 -8px 24px -12px rgb(0 0 0 / 0.25);
   }
 }
 
@@ -278,5 +313,3 @@ header.hero,
 
 .animate-scroll-left { animation: scroll-left linear infinite; }
 .animate-scroll-right { animation: scroll-right linear infinite; }
-
-

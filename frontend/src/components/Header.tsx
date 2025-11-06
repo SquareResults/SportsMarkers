@@ -66,11 +66,11 @@ export default function Header() {
     ' border border-emerald-500 text-emerald-700 hover:bg-emerald-50';
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white/90 backdrop-blur-md supports-[backdrop-filter]:bg-white/70 shadow-[0_6px_20px_-8px_rgba(0,0,0,0.3)]">
+    <header className="sticky top-0 z-50 w-full bg-white border-b border-gray-200">
       <div className="mx-auto flex h-16 max-w-[1200px] items-center gap-4 px-4 sm:h-20 sm:px-6">
         {/* Left: logo */}
         <Link href="/" className="flex items-center gap-3">
-          <Image src="/images/logo.svg" alt="SportsMarkers" width={36} height={36} />
+          <Image src="/images/logo.png" alt="SportsMarkers" width={36} height={36} />
           <span className="text-xl font-extrabold tracking-tight text-foreground">SportsMarkers</span>
         </Link>
 

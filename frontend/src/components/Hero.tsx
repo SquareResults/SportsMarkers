@@ -19,7 +19,7 @@ type Slide =
 
 const slides: Slide[] = [
   // First slide = SportsMarkers logo
-  { kind: 'logo', sport: 'SportsMarkers', image: '/images/logo.svg' },
+  { kind: 'logo', sport: 'SportsMarkers', image: '/images/logo.png' },
   // Other slides = regular photos
   { kind: 'photo', sport: 'Basketball', image: '/images/Basket.jpg' },
   { kind: 'photo', sport: 'Soccer', image: '/images/Football.jpg' },
