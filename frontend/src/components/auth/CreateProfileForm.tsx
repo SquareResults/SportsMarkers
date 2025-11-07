@@ -5,7 +5,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -24,21 +31,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useSupabase } from "@/components/SupabaseProvider";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "@/components/ui/input-group";
-import {
-  User,
-  Mail,
-  Phone,
-  Link as LinkIcon,
-  Trophy,
-  Upload,
-} from "lucide-react";
+import { Upload } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const ACCEPTED_IMAGE_TYPES = [
@@ -48,96 +43,49 @@ const ACCEPTED_IMAGE_TYPES = [
   "image/webp",
 ];
 
+/* ---------- Zod Schema ---------- */
 const formSchema = z.object({
-  // Section 1
+  // 1
   firstName: z.string().min(1, "First name is required"),
   middleName: z.string().optional(),
   lastName: z.string().min(1, "Last name is required"),
   sport: z.string().min(1, "Sport is required"),
-  profilePicture: z
-    .any()
-    .refine((files: FileList | undefined) => {
-      if (typeof window === "undefined" || !files) return true;
-      if (!(files instanceof FileList)) return false;
-      return (
-        files.length === 0 ||
-        (files.length === 1 && ACCEPTED_IMAGE_TYPES.includes(files[0].type))
-      );
-    }, "Only .jpg, .jpeg, .png and .webp formats are supported.")
-    .optional(),
+  profilePicture: z.any().optional(),
 
-  // Section 2
+  // 2
   bio: z.string().optional(),
   background: z.string().optional(),
 
-  // Section 3
+  // 3
   experience: z.string().optional(),
   achievements: z.string().optional(),
   timeline: z.string().optional(),
 
-  // Section 4
+  // 4
   skills: z.string().optional(),
-  videoLinks: z
-    .string()
-    .url("Please enter a valid URL")
-    .or(z.literal(""))
-    .optional(),
-  actionPhotos: z
-    .any()
-    .refine((files: FileList | undefined) => {
-      if (typeof window === "undefined" || !files) return true;
-      if (!(files instanceof FileList)) return false;
-      return (
-        files.length === 0 ||
-        Array.from(files).every((file: any) =>
-          ACCEPTED_IMAGE_TYPES.includes(file.type),
-        )
-      );
-    }, "Only .jpg, .jpeg, .png and .webp formats are supported.")
-    .optional(),
+  videoLinks: z.string().optional(),
+  actionPhotos: z.any().optional(),
   press: z.string().optional(),
-  mediaLinks: z
-    .string()
-    .url("Please enter a valid URL")
-    .or(z.literal(""))
-    .optional(),
+  mediaLinks: z.string().optional(),
 
-  // Section 5
+  // 5
   goals: z.string().optional(),
-  opportunities: z.string().optional(),
+  opportunities: z.enum(["", "Yes", "No", "Maybe"]),
 
-  // Section 6
+  // 6
   endorsements: z.string().optional(),
   merch: z.string().optional(),
 
-  // Section 7
+  // 7
   contactEmail: z.string().email("Invalid email address"),
-  phone: z
-    .string()
-    .regex(/^\+?[1-9]\d{1,14}$/, "Invalid phone number")
-    .or(z.literal(""))
-    .optional(),
-  socials: z
-    .string()
-    .url("Please enter a valid URL")
-    .or(z.literal(""))
-    .optional(),
-  hasLogo: z.string().optional(),
+  phone: z.string().optional(),
+  socials: z.string().optional(),
+  hasLogo: z.enum(["", "Yes", "No"]),
 
-  // Section 8
-  logoUpload: z
-    .any()
-    .refine((files: FileList | undefined) => {
-      if (typeof window === "undefined" || !files) return true;
-      if (!(files instanceof FileList)) return false;
-      return (
-        files.length === 0 ||
-        (files.length === 1 && ACCEPTED_IMAGE_TYPES.includes(files[0].type))
-      );
-    }, "Only .jpg, .jpeg, .png and .webp formats are supported.")
-    .optional(),
+  // 8
+  logoUpload: z.any().optional(),
 
-  // Section 9
+  // 9
   resume: z.any().optional(),
   references: z.any().optional(),
   certifications: z.any().optional(),
@@ -145,6 +93,7 @@ const formSchema = z.object({
   comments: z.string().optional(),
 });
 
+/* ---------- Component ---------- */
 export function CreateProfileForm({
   className,
   ...props
@@ -152,6 +101,7 @@ export function CreateProfileForm({
   const supabase = useSupabase();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("section1");
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -182,6 +132,35 @@ export function CreateProfileForm({
     },
   });
 
+  /* ---------- Navigation Helpers ---------- */
+  const goToTab = (tab: string) => {
+    setActiveTab(tab);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const nextTab = () => {
+    const idx = tabs.findIndex((t) => t.value === activeTab);
+    if (idx < tabs.length - 1) goToTab(tabs[idx + 1].value);
+  };
+  const prevTab = () => {
+    const idx = tabs.findIndex((t) => t.value === activeTab);
+    if (idx > 0) goToTab(tabs[idx - 1].value);
+  };
+
+  /* ---------- Tabs definition ---------- */
+  const tabs = [
+    { value: "section1", label: "Basic Info" },
+    { value: "section2", label: "Bio & Background" },
+    { value: "section3", label: "Journey" },
+    { value: "section4", label: "Skills & Media" },
+    { value: "section5", label: "Goals" },
+    { value: "section6", label: "Endorsements" },
+    { value: "section7", label: "Contact" },
+    { value: "section8", label: "Logo" },
+    { value: "section9", label: "Uploads" },
+  ];
+
+  /* ---------- Submit ---------- */
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
     const {
@@ -194,910 +173,805 @@ export function CreateProfileForm({
     }
 
     const uploadFile = async (file: File, bucket: string) => {
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+      const ext = file.name.split(".").pop();
+      const name = `${user.id}-${Date.now()}-${Math.random()
+        .toString(36)
+        .substr(2, 9)}.${ext}`;
       const { data, error } = await supabase.storage
         .from(bucket)
-        .upload(fileName, file);
+        .upload(name, file);
       if (error) {
-        console.error("Error uploading file:", error);
+        console.error(error);
         return null;
       }
       return data.path;
     };
 
-    let profilePictureUrl: string | null = null;
-    if (values.profilePicture && values.profilePicture.length > 0) {
-      profilePictureUrl = await uploadFile(values.profilePicture[0], "avatars");
-    }
-
-    let logoUrl: string | null = null;
-    if (values.logoUpload && values.logoUpload.length > 0) {
-      logoUrl = await uploadFile(values.logoUpload[0], "logos");
-    }
+    const profilePictureUrl = values.profilePicture?.[0]
+      ? await uploadFile(values.profilePicture[0], "avatars")
+      : null;
+    const logoUrl = values.logoUpload?.[0]
+      ? await uploadFile(values.logoUpload[0], "logos")
+      : null;
 
     const portfolioData = {
       user_id: user.id,
       first_name: values.firstName,
-      middle_name: values.middleName,
+      middle_name: values.middleName || null,
       last_name: values.lastName,
       sport: values.sport,
       profile_picture_url: profilePictureUrl,
-      bio: values.bio,
-      background: values.background,
-      experience: values.experience,
-      achievements: values.achievements,
-      timeline: values.timeline,
-      skills: values.skills,
-      video_links: values.videoLinks ? [values.videoLinks] : null,
-      press: values.press,
-      media_links: values.mediaLinks ? [values.mediaLinks] : null,
-      goals: values.goals,
-      opportunities: values.opportunities,
-      endorsements: values.endorsements,
-      merch: values.merch,
+      bio: values.bio || null,
+      background: values.background || null,
+      experience: values.experience || null,
+      achievements: values.achievements || null,
+      timeline: values.timeline || null,
+      skills: values.skills || null,
+      video_links: values.videoLinks
+        ? values.videoLinks.split("\n").filter(Boolean)
+        : null,
+      press: values.press || null,
+      media_links: values.mediaLinks
+        ? values.mediaLinks.split("\n").filter(Boolean)
+        : null,
+      goals: values.goals || null,
+      opportunities: values.opportunities || null,
+      endorsements: values.endorsements || null,
+      merch: values.merch || null,
       contact_email: values.contactEmail,
-      phone: values.phone,
-      socials: values.socials ? [values.socials] : null,
-      has_logo: values.hasLogo === "yes",
+      phone: values.phone || null,
+      socials: values.socials
+        ? values.socials.split("\n").filter(Boolean)
+        : null,
+      has_logo: values.hasLogo === "Yes",
       logo_url: logoUrl,
-      comments: values.comments,
+      comments: values.comments || null,
     };
 
     const { error } = await supabase.from("portfolios").insert([portfolioData]);
-    if (error) alert(error.message);
+    if (error) alert("Error: " + error.message);
     else {
-      alert("Portfolio created successfully!");
+      alert("Portfolio created!");
       router.push("/profile");
     }
     setLoading(false);
   }
 
-  const inputClass =
-    "h-12 rounded-xl border border-slate-200 bg-white " +
-    "placeholder:text-slate-400 " +
-    "focus-visible:ring-2 focus-visible:ring-[#254485]/40 focus-visible:border-[#254485]";
-
-  const textareaClass =
-    "min-h-[140px] rounded-xl border border-slate-200 bg-white " +
-    "placeholder:text-slate-400 " +
-    "focus-visible:ring-2 focus-visible:ring-[#254485]/40 focus-visible:border-[#254485]";
-
-  const primaryPill =
+  const inputCls =
+    "h-12 rounded-xl border border-slate-200 bg-white placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-emerald-500/40 focus-visible:border-emerald-500";
+  const textareaCls =
+    "min-h-[140px] rounded-xl border border-slate-200 bg-white placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-emerald-500/40 focus-visible:border-emerald-500";
+  const pillActive =
     "h-11 px-8 rounded-full font-semibold text-white shadow-lg " +
     "bg-gradient-to-r from-emerald-400 to-green-600 " +
     "hover:from-emerald-500 hover:to-green-700 transition";
 
+  const pillOutline =
+    "h-11 px-6 rounded-full font-semibold border border-slate-300 " +
+    "text-slate-700 hover:bg-slate-50 transition";
+
   return (
     <div
-      className={cn("mx-auto max-w-5xl px-4 sm:px-6 lg:px-8", className)}
+      className={cn("mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8", className)}
       {...props}
     >
-      <div className="mb-8 sm:mb-10 rounded-3xl border border-slate-200 bg-slate-50 p-6 sm:p-10 shadow-[0_12px_40px_-24px_rgba(2,6,23,0.5)] text-center">
-        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900">
+      <div className="mb-10 text-center">
+        <h1 className="text-4xl font-extrabold tracking-tight text-slate-900">
           Create Your Athlete Portfolio
         </h1>
-        <p className="mt-2 text-slate-600">
-          Showcase your athletic journey and achievements.
+        <p className="mt-2 text-lg text-slate-600">
+          Showcase your athletic journey and achievements
         </p>
       </div>
 
-      <Card className="rounded-3xl border border-slate-200 shadow-[0_16px_50px_-24px_rgba(2,6,23,0.35)]">
-        <CardContent className="p-6 sm:p-10">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              <Tabs defaultValue="basic-info" className="w-full">
-                <TabsList className="flex w-full overflow-x-auto">
-                  <TabsTrigger value="basic-info">Basic Info</TabsTrigger>
-                  <TabsTrigger value="bio-background">
-                    Bio & Background
-                  </TabsTrigger>
-                  <TabsTrigger value="athletic-journey">
-                    Athletic Journey
-                  </TabsTrigger>
-                  <TabsTrigger value="skills-media">Skills & Media</TabsTrigger>
-                  <TabsTrigger value="goals-opportunities">
-                    Goals & Opportunities
-                  </TabsTrigger>
-                  <TabsTrigger value="endorsements-merch">
-                    Endorsements & Merch
-                  </TabsTrigger>
-                  <TabsTrigger value="contact-style">
-                    Contact & Style
-                  </TabsTrigger>
-                  <TabsTrigger value="logo">Logo</TabsTrigger>
-                  <TabsTrigger value="additional-uploads">
-                    Additional Uploads
-                  </TabsTrigger>
-                </TabsList>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-10">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full"
+          >
+            {/* ---------- TABS LIST ---------- */}
+            <TabsList className="flex items-center justify-start overflow-x-auto -mx-4 sm:-mx-6 md:-mx-10 px-4 sm:px-6 md:px-10 border-b border-slate-200">
+              {tabs.map((tab, i) => (
+                <TabsTrigger
+                  key={tab.value}
+                  value={tab.value}
+                  className="relative flex-shrink-0 flex flex-col items-center gap-1 whitespace-nowrap px-5 py-3 text-sm font-medium text-slate-500 hover:text-emerald-600 transition-colors duration-200 ease-in-out focus:outline-none data-[state=active]:text-emerald-600 data-[state=active]:shadow-none after:absolute after:bottom-[-1px] after:left-0 after:right-0 after:h-0.5 after:bg-emerald-600 after:scale-x-0 after:transition-transform after:duration-300 after:ease-in-out data-[state=active]:after:scale-x-100"
+                >
+                  <span className="font-bold text-base">{tab.label}</span>
+                  <span className="text-xs">{tab.desc}</span>
+                </TabsTrigger>
+              ))}
+            </TabsList>
 
-                <TabsContent value="basic-info">
-                  <div className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
-                    <FormField
-                      control={form.control}
-                      name="firstName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="font-semibold">
-                            First Name *
-                          </FormLabel>
-                          <FormControl>
-                            <InputGroup>
-                              <InputGroupAddon>
-                                <User />
-                              </InputGroupAddon>
-                              <InputGroupInput
-                                className={inputClass}
-                                placeholder="Your first name"
-                                {...field}
-                                value={field.value ?? ""}
-                              />
-                            </InputGroup>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="middleName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="font-semibold">
-                            Middle Name
-                          </FormLabel>
-                          <FormControl>
-                            <InputGroup>
-                              <InputGroupAddon>
-                                <User />
-                              </InputGroupAddon>
-                              <InputGroupInput
-                                className={inputClass}
-                                placeholder="Your middle name (optional)"
-                                {...field}
-                                value={field.value ?? ""}
-                              />
-                            </InputGroup>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="lastName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="font-semibold">
-                            Last Name *
-                          </FormLabel>
-                          <FormControl>
-                            <InputGroup>
-                              <InputGroupAddon>
-                                <User />
-                              </InputGroupAddon>
-                              <InputGroupInput
-                                className={inputClass}
-                                placeholder="Your last name"
-                                {...field}
-                                value={field.value ?? ""}
-                              />
-                            </InputGroup>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="sport"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="font-semibold">
-                            Sport You Play *
-                          </FormLabel>
-                          <FormControl>
-                            <InputGroup>
-                              <InputGroupAddon>
-                                <Trophy />
-                              </InputGroupAddon>
-                              <InputGroupInput
-                                className={inputClass}
-                                placeholder="e.g., Basketball, Soccer, Track & Field"
-                                {...field}
-                                value={field.value ?? ""}
-                              />
-                            </InputGroup>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="profilePicture"
-                      render={({ field: { onChange, onBlur, name, ref } }) => (
-                        <FormItem>
-                          <FormLabel className="font-semibold">
-                            Profile Picture
-                          </FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <Input
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) => onChange(e.target.files)}
-                                onBlur={onBlur}
-                                name={name}
-                                ref={ref}
-                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                              />
-                              <div className="h-12 flex items-center rounded-xl border border-slate-200 bg-white px-3">
-                                <Upload className="h-5 w-5 text-slate-400 mr-2" />
-                                <span className="text-slate-700">
-                                  {form.watch("profilePicture")?.[0]?.name ||
-                                    "Choose a file"}
-                                </span>
-                              </div>
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </TabsContent>
+            {/* ---------- SECTION 1 ---------- */}
+            <TabsContent value="section1">
+              <Card className="border-2 border-slate-200 shadow-xl">
+                <CardHeader>
+                  <CardTitle>Section 1 of 9: Basic Info</CardTitle>
+                  <CardDescription>Tell us about yourself</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <FormField
+                    control={form.control}
+                    name="firstName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>First Name *</FormLabel>
+                        <FormControl>
+                          <Input
+                            className={inputCls}
+                            placeholder="Your first name"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="middleName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Middle Name</FormLabel>
+                        <FormControl>
+                          <Input
+                            className={inputCls}
+                            placeholder="Optional"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="lastName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Last Name *</FormLabel>
+                        <FormControl>
+                          <Input
+                            className={inputCls}
+                            placeholder="Your last name"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="sport"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Sport You Play *</FormLabel>
+                        <FormControl>
+                          <Input
+                            className={inputCls}
+                            placeholder="e.g., Basketball, Soccer"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="profilePicture"
+                    render={({ field: { onChange, value, ...field } }) => (
+                      <FormItem>
+                        <FormLabel>Profile Picture</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => onChange(e.target.files)}
+                              className="hidden"
+                              id="profilePic"
+                            />
+                            <label
+                              htmlFor="profilePic"
+                              className="flex h-12 cursor-pointer items-center rounded-xl border border-slate-200 bg-white px-4"
+                            >
+                              <Upload className="mr-3 h-5 w-5 text-slate-500" />
+                              <span className="text-slate-700">
+                                {value?.[0]?.name || "Choose image"}
+                              </span>
+                            </label>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+                <CardFooter className="flex justify-end">
+                  <Button
+                    type="button"
+                    onClick={nextTab}
+                    className={pillActive}
+                  >
+                    Next
+                  </Button>
+                </CardFooter>
+              </Card>
+            </TabsContent>
 
-                <TabsContent value="bio-background">
-                  <div className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
-                    <FormField
-                      control={form.control}
-                      name="bio"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="font-semibold">
-                            Short Bio / Athlete Introduction
-                          </FormLabel>
-                          <FormControl>
-                            <Textarea
-                              className={textareaClass}
-                              placeholder="Who are you? What motivates you as an athlete?"
-                              {...field}
-                              value={field.value ?? ""}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="background"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="font-semibold">
-                            Athletic/Educational Background
-                          </FormLabel>
-                          <FormControl>
-                            <Textarea
-                              className={textareaClass}
-                              placeholder="List schools, programs, or teams you’ve been part of. Include years."
-                              {...field}
-                              value={field.value ?? ""}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </TabsContent>
+            {/* ---------- SECTION 2 ---------- */}
+            <TabsContent value="section2">
+              <Card className="border-2 border-slate-200 shadow-xl">
+                <CardHeader>
+                  <CardTitle>Section 2 of 9: Bio & Background</CardTitle>
+                  <CardDescription>
+                    Short intro and your background
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <FormField
+                    control={form.control}
+                    name="bio"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Short Bio</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            className={textareaCls}
+                            placeholder="Who are you? What motivates you?"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="background"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Background</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            className={textareaCls}
+                            placeholder="Schools, teams, years..."
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+                <CardFooter className="flex justify-between">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={prevTab}
+                    className={pillOutline}
+                  >
+                    Back
+                  </Button>
+                  <Button onClick={nextTab} className={pillActive}>
+                    Next
+                  </Button>
+                </CardFooter>
+              </Card>
+            </TabsContent>
 
-                <TabsContent value="athletic-journey">
-                  <div className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
+            {/* ---------- SECTION 3 ---------- */}
+            <TabsContent value="section3">
+              <Card className="border-2 border-slate-200 shadow-xl">
+                <CardHeader>
+                  <CardTitle>Section 3 of 9: Athletic Journey</CardTitle>
+                  <CardDescription>Roles, stats, milestones</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {["experience", "achievements", "timeline"].map((key) => (
                     <FormField
+                      key={key}
                       control={form.control}
-                      name="experience"
+                      name={key as keyof typeof form.watch}
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="font-semibold">
-                            Athletic Experience & Teams
+                          <FormLabel>
+                            {key === "experience"
+                              ? "Experience & Teams"
+                              : key === "achievements"
+                                ? "Achievements & Stats"
+                                : "Timeline"}
                           </FormLabel>
                           <FormControl>
-                            <Textarea
-                              className={textareaClass}
-                              placeholder="e.g., Point Guard — Varsity Team (2021–2023), Team Captain (2023)"
-                              {...field}
-                              value={field.value ?? ""}
-                            />
+                            <Textarea className={textareaCls} {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    <FormField
-                      control={form.control}
-                      name="achievements"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="font-semibold">
-                            Major Achievements & Stats
-                          </FormLabel>
-                          <FormControl>
-                            <Textarea
-                              className={textareaClass}
-                              placeholder="e.g., State Championship 2023, MVP Award, 18.5 PPG average"
-                              {...field}
-                              value={field.value ?? ""}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="timeline"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="font-semibold">
-                            Athletic Timeline
-                          </FormLabel>
-                          <FormControl>
-                            <Textarea
-                              className={textareaClass}
-                              placeholder="e.g., 2015: Started playing • 2018: First tournament • 2021: Varsity team"
-                              {...field}
-                              value={field.value ?? ""}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </TabsContent>
+                  ))}
+                </CardContent>
+                <CardFooter className="flex justify-between">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={prevTab}
+                    className={pillOutline}
+                  >
+                    Back
+                  </Button>
+                  <Button onClick={nextTab} className={pillActive}>
+                    Next
+                  </Button>
+                </CardFooter>
+              </Card>
+            </TabsContent>
 
-                <TabsContent value="skills-media">
-                  <div className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
-                    <FormField
-                      control={form.control}
-                      name="skills"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="font-semibold">
-                            Key Skills or Strengths in Your Sport
-                          </FormLabel>
-                          <FormControl>
-                            <Textarea
-                              className={textareaClass}
-                              placeholder="e.g., speed, leadership, accuracy, strategic thinking"
-                              {...field}
-                              value={field.value ?? ""}
+            {/* ---------- SECTION 4 ---------- */}
+            <TabsContent value="section4">
+              <Card className="border-2 border-slate-200 shadow-xl">
+                <CardHeader>
+                  <CardTitle>Section 4 of 9: Skills & Media</CardTitle>
+                  <CardDescription>Videos, photos, press</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <FormField
+                    control={form.control}
+                    name="skills"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Key Skills</FormLabel>
+                        <FormControl>
+                          <Textarea className={textareaCls} {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="videoLinks"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Highlight Videos (YouTube)</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            className={textareaCls}
+                            placeholder="One link per line"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="actionPhotos"
+                    render={({ field: { onChange, ...field } }) => (
+                      <FormItem>
+                        <FormLabel>Action Photos</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Input
+                              type="file"
+                              accept="image/*"
+                              multiple
+                              onChange={(e) => onChange(e.target.files)}
+                              className="hidden"
+                              id="actionPhotos"
                             />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                            <label
+                              htmlFor="actionPhotos"
+                              className="flex h-12 cursor-pointer items-center rounded-xl border border-slate-200 bg-white px-4"
+                            >
+                              <Upload className="mr-3 h-5 w-5 text-slate-500" />
+                              <span className="text-slate-700">
+                                {form.watch("actionPhotos")?.length
+                                  ? `${form.watch("actionPhotos").length} photos`
+                                  : "Choose photos"}
+                              </span>
+                            </label>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  {["press", "mediaLinks"].map((key) => (
                     <FormField
+                      key={key}
                       control={form.control}
-                      name="videoLinks"
+                      name={key as keyof typeof form.watch}
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="font-semibold">
-                            Highlight Videos (YouTube links)
+                          <FormLabel>
+                            {key === "press"
+                              ? "Press Mentions"
+                              : "Other Media Links"}
                           </FormLabel>
                           <FormControl>
-                            <InputGroup>
-                              <InputGroupAddon>
-                                <LinkIcon />
-                              </InputGroupAddon>
-                              <Textarea
-                                className={textareaClass}
-                                placeholder="Paste YouTube links (one per line)"
-                                {...field}
-                                value={field.value ?? ""}
-                              />
-                            </InputGroup>
+                            <Textarea className={textareaCls} {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    <FormField
-                      control={form.control}
-                      name="actionPhotos"
-                      render={({ field: { onChange, onBlur, name, ref } }) => (
-                        <FormItem>
-                          <FormLabel className="font-semibold">
-                            Game or Action Photos
-                          </FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <Input
-                                type="file"
-                                multiple
-                                accept="image/*"
-                                onChange={(e) => onChange(e.target.files)}
-                                onBlur={onBlur}
-                                name={name}
-                                ref={ref}
-                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                              />
-                              <div className="h-12 flex items-center rounded-xl border border-slate-200 bg-white px-3">
-                                <Upload className="h-5 w-5 text-slate-400 mr-2" />
-                                <span className="text-slate-700">
-                                  {form.watch("actionPhotos")?.length
-                                    ? `${form.watch("actionPhotos").length} files selected`
-                                    : "Choose files"}
-                                </span>
-                              </div>
-                            </div>
-                          </FormControl>
-                          <p className="text-sm text-slate-500">
-                            Upload JPG/PNG. You can add more later.
-                          </p>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="press"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="font-semibold">
-                            Press or Media Mentions
-                          </FormLabel>
-                          <FormControl>
-                            <Textarea
-                              className={textareaClass}
-                              placeholder="Any coverage or media mentions…"
-                              {...field}
-                              value={field.value ?? ""}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="mediaLinks"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="font-semibold">
-                            Video/Photo/Media Uploads
-                          </FormLabel>
-                          <FormControl>
-                            <InputGroup>
-                              <InputGroupAddon>
-                                <LinkIcon />
-                              </InputGroupAddon>
-                              <Textarea
-                                className={textareaClass}
-                                placeholder="Paste any video or article links here"
-                                {...field}
-                                value={field.value ?? ""}
-                              />
-                            </InputGroup>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </TabsContent>
+                  ))}
+                </CardContent>
+                <CardFooter className="flex justify-between">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={prevTab}
+                    className={pillOutline}
+                  >
+                    Back
+                  </Button>
+                  <Button onClick={nextTab} className={pillActive}>
+                    Next
+                  </Button>
+                </CardFooter>
+              </Card>
+            </TabsContent>
 
-                <TabsContent value="goals-opportunities">
-                  <div className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
-                    <FormField
-                      control={form.control}
-                      name="goals"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="font-semibold">
-                            What are your current goals as an athlete?
-                          </FormLabel>
-                          <FormControl>
-                            <Textarea
-                              className={textareaClass}
-                              placeholder="e.g., “Seeking scholarship”, “Join national team”, “Train professionally.”"
-                              {...field}
-                              value={field.value ?? ""}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="opportunities"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="font-semibold">
-                            Are you looking for sponsorships or training
-                            opportunities?
-                          </FormLabel>
-                          <FormControl>
-                            <Textarea
-                              className={textareaClass}
-                              placeholder=""
-                              {...field}
-                              value={field.value ?? ""}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="endorsements-merch">
-                  <div className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
-                    <FormField
-                      control={form.control}
-                      name="endorsements"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="font-semibold">
-                            Have you received any endorsements or awards?
-                          </FormLabel>
-                          <FormControl>
-                            <Textarea
-                              className={textareaClass}
-                              placeholder="Brands, sponsors, notable recognitions…"
-                              {...field}
-                              value={field.value ?? ""}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="merch"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="font-semibold">
-                            Do you sell merchandise or have a fan page/shop?
-                          </FormLabel>
-                          <FormControl>
-                            <Textarea
-                              className={textareaClass}
-                              placeholder="Include links or descriptions…"
-                              {...field}
-                              value={field.value ?? ""}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="contact-style">
-                  <div className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
-                    <FormField
-                      control={form.control}
-                      name="contactEmail"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="font-semibold">
-                            Email Address for Contact *
-                          </FormLabel>
-                          <FormControl>
-                            <InputGroup>
-                              <InputGroupAddon>
-                                <Mail />
-                              </InputGroupAddon>
-                              <InputGroupInput
-                                className={inputClass}
-                                type="email"
-                                placeholder="you@example.com"
-                                {...field}
-                                value={field.value ?? ""}
-                              />
-                            </InputGroup>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="phone"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="font-semibold">
-                            Phone Number
-                          </FormLabel>
-                          <FormControl>
-                            <InputGroup>
-                              <InputGroupAddon>
-                                <Phone />
-                              </InputGroupAddon>
-                              <InputGroupInput
-                                className={inputClass}
-                                type="tel"
-                                placeholder="+1 (555) 123-4567"
-                                {...field}
-                                value={field.value ?? ""}
-                              />
-                            </InputGroup>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="socials"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="font-semibold">
-                            Social Media Links
-                          </FormLabel>
-                          <FormControl>
-                            <InputGroup>
-                              <InputGroupAddon>
-                                <LinkIcon />
-                              </InputGroupAddon>
-                              <Textarea
-                                className={textareaClass}
-                                placeholder="Instagram, X/Twitter, TikTok… one per line"
-                                {...field}
-                                value={field.value ?? ""}
-                              />
-                            </InputGroup>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="hasLogo"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="font-semibold">
-                            Do you have a personal logo or branding?
-                          </FormLabel>
+            {/* ---------- SECTION 5 ---------- */}
+            <TabsContent value="section5">
+              <Card className="border-2 border-slate-200 shadow-xl">
+                <CardHeader>
+                  <CardTitle>Section 5 of 9: Goals & Opportunities</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <FormField
+                    control={form.control}
+                    name="goals"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Current Goals</FormLabel>
+                        <FormControl>
+                          <Textarea className={textareaCls} {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="opportunities"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Sponsorship / Training?</FormLabel>
+                        <FormControl>
                           <Select
                             onValueChange={field.onChange}
                             defaultValue={field.value}
                           >
-                            <FormControl>
-                              <SelectTrigger className="h-12 rounded-xl border border-slate-200 bg-white focus-visible:ring-2 focus-visible:ring-[#254485]/40">
-                                <SelectValue placeholder="Select an option" />
-                              </SelectTrigger>
-                            </FormControl>
+                            <SelectTrigger className="h-12 rounded-xl">
+                              <SelectValue placeholder="Select" />
+                            </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="yes">Yes</SelectItem>
-                              <SelectItem value="no">No</SelectItem>
+                              <SelectItem value="Yes">Yes</SelectItem>
+                              <SelectItem value="No">No</SelectItem>
+                              <SelectItem value="Maybe">Maybe</SelectItem>
                             </SelectContent>
                           </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </TabsContent>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+                <CardFooter className="flex justify-between">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={prevTab}
+                    className={pillOutline}
+                  >
+                    Back
+                  </Button>
+                  <Button onClick={nextTab} className={pillActive}>
+                    Next
+                  </Button>
+                </CardFooter>
+              </Card>
+            </TabsContent>
 
-                <TabsContent value="logo">
-                  <div className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
+            {/* ---------- SECTION 6 ---------- */}
+            <TabsContent value="section6">
+              <Card className="border-2 border-slate-200 shadow-xl">
+                <CardHeader>
+                  <CardTitle>Section 6 of 9: Endorsements & Merch</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {["endorsements", "merch"].map((key) => (
                     <FormField
+                      key={key}
                       control={form.control}
-                      name="logoUpload"
-                      render={({ field: { onChange, onBlur, name, ref } }) => (
-                        <FormItem>
-                          <FormLabel className="font-semibold">
-                            Upload a Logo or Wordmark
-                          </FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <Input
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) => onChange(e.target.files)}
-                                onBlur={onBlur}
-                                name={name}
-                                ref={ref}
-                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                              />
-                              <div className="h-12 flex items-center rounded-xl border border-slate-200 bg-white px-3">
-                                <Upload className="h-5 w-5 text-slate-400 mr-2" />
-                                <span className="text-slate-700">
-                                  {form.watch("logoUpload")?.[0]?.name ||
-                                    "Choose a file"}
-                                </span>
-                              </div>
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="additional-uploads">
-                  <div className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
-                    <FormField
-                      control={form.control}
-                      name="resume"
-                      render={({ field: { onChange, onBlur, name, ref } }) => (
-                        <FormItem>
-                          <FormLabel className="font-semibold">
-                            Resume/CV
-                          </FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <Input
-                                type="file"
-                                onChange={(e) => onChange(e.target.files)}
-                                onBlur={onBlur}
-                                name={name}
-                                ref={ref}
-                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                              />
-                              <div className="h-12 flex items-center rounded-xl border border-slate-200 bg-white px-3">
-                                <Upload className="h-5 w-5 text-slate-400 mr-2" />
-                                <span className="text-slate-700">
-                                  {form.watch("resume")?.[0]?.name ||
-                                    "Choose a file"}
-                                </span>
-                              </div>
-                            </div>
-                          </FormControl>
-                          <p className="text-sm text-slate-500">
-                            PDF preferred.
-                          </p>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="references"
-                      render={({ field: { onChange, onBlur, name, ref } }) => (
-                        <FormItem>
-                          <FormLabel className="font-semibold">
-                            Reference letters
-                          </FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <Input
-                                type="file"
-                                multiple
-                                onChange={(e) => onChange(e.target.files)}
-                                onBlur={onBlur}
-                                name={name}
-                                ref={ref}
-                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                              />
-                              <div className="h-12 flex items-center rounded-xl border border-slate-200 bg-white px-3">
-                                <Upload className="h-5 w-5 text-slate-400 mr-2" />
-                                <span className="text-slate-700">
-                                  {form.watch("references")?.length
-                                    ? `${form.watch("references").length} files selected`
-                                    : "Choose files"}
-                                </span>
-                              </div>
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="certifications"
-                      render={({ field: { onChange, onBlur, name, ref } }) => (
-                        <FormItem>
-                          <FormLabel className="font-semibold">
-                            Certifications
-                          </FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <Input
-                                type="file"
-                                multiple
-                                onChange={(e) => onChange(e.target.files)}
-                                onBlur={onBlur}
-                                name={name}
-                                ref={ref}
-                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                              />
-                              <div className="h-12 flex items-center rounded-xl border border-slate-200 bg-white px-3">
-                                <Upload className="h-5 w-5 text-slate-400 mr-2" />
-                                <span className="text-slate-700">
-                                  {form.watch("certifications")?.length
-                                    ? `${form.watch("certifications").length} files selected`
-                                    : "Choose files"}
-                                </span>
-                              </div>
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="moreMedia"
-                      render={({ field: { onChange, onBlur, name, ref } }) => (
-                        <FormItem>
-                          <FormLabel className="font-semibold">
-                            Additional photos or media
-                          </FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <Input
-                                type="file"
-                                multiple
-                                onChange={(e) => onChange(e.target.files)}
-                                onBlur={onBlur}
-                                name={name}
-                                ref={ref}
-                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                              />
-                              <div className="h-12 flex items-center rounded-xl border border-slate-200 bg-white px-3">
-                                <Upload className="h-5 w-5 text-slate-400 mr-2" />
-                                <span className="text-slate-700">
-                                  {form.watch("moreMedia")?.length
-                                    ? `${form.watch("moreMedia").length} files selected`
-                                    : "Choose files"}
-                                </span>
-                              </div>
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="comments"
+                      name={key as keyof typeof form.watch}
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="font-semibold">
-                            Additional Comments
+                          <FormLabel>
+                            {key === "endorsements"
+                              ? "Endorsements / Awards"
+                              : "Merch / Fan Shop"}
                           </FormLabel>
                           <FormControl>
-                            <Textarea
-                              className={textareaClass}
-                              placeholder="Anything else coaches/recruiters should know…"
-                              {...field}
-                              value={field.value ?? ""}
-                            />
+                            <Textarea className={textareaCls} {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                  </div>
-                </TabsContent>
-              </Tabs>
+                  ))}
+                </CardContent>
+                <CardFooter className="flex justify-between">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={prevTab}
+                    className={pillOutline}
+                  >
+                    Back
+                  </Button>
+                  <Button onClick={nextTab} className={pillActive}>
+                    Next
+                  </Button>
+                </CardFooter>
+              </Card>
+            </TabsContent>
 
-              <div className="flex items-center justify-end pt-2">
-                <Button
-                  type="submit"
-                  disabled={loading}
-                  className={primaryPill}
-                >
-                  {loading ? "Submitting..." : "Submit"}
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+            {/* ---------- SECTION 7 ---------- */}
+            <TabsContent value="section7">
+              <Card className="border-2 border-slate-200 shadow-xl">
+                <CardHeader>
+                  <CardTitle>Section 7 of 9: Contact & Style</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <FormField
+                    control={form.control}
+                    name="contactEmail"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email *</FormLabel>
+                        <FormControl>
+                          <Input type="email" className={inputCls} {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Phone</FormLabel>
+                        <FormControl>
+                          <Input type="tel" className={inputCls} {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="socials"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Social Links</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            className={textareaCls}
+                            placeholder="One per line"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="hasLogo"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Personal Logo?</FormLabel>
+                        <FormControl>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <SelectTrigger className="h-12 rounded-xl">
+                              <SelectValue placeholder="Select" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Yes">Yes</SelectItem>
+                              <SelectItem value="No">No</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+                <CardFooter className="flex justify-between">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={prevTab}
+                    className={pillOutline}
+                  >
+                    Back
+                  </Button>
+                  <Button onClick={nextTab} className={pillActive}>
+                    Next
+                  </Button>
+                </CardFooter>
+              </Card>
+            </TabsContent>
+
+            {/* ---------- SECTION 8 ---------- */}
+            <TabsContent value="section8">
+              <Card className="border-2 border-slate-200 shadow-xl">
+                <CardHeader>
+                  <CardTitle>Section 8 of 9: Logo Upload</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <FormField
+                    control={form.control}
+                    name="logoUpload"
+                    render={({ field: { onChange, ...field } }) => (
+                      <FormItem>
+                        <FormLabel>Upload Logo</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => onChange(e.target.files)}
+                              className="hidden"
+                              id="logo"
+                            />
+                            <label
+                              htmlFor="logo"
+                              className="flex h-12 cursor-pointer items-center rounded-xl border border-slate-200 bg-white px-4"
+                            >
+                              <Upload className="mr-3 h-5 w-5 text-slate-500" />
+                              <span className="text-slate-700">
+                                {form.watch("logoUpload")?.[0]?.name ||
+                                  "Choose file"}
+                              </span>
+                            </label>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+                <CardFooter className="flex justify-between">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={prevTab}
+                    className={pillOutline}
+                  >
+                    Back
+                  </Button>
+                  <Button onClick={nextTab} className={pillActive}>
+                    Next
+                  </Button>
+                </CardFooter>
+              </Card>
+            </TabsContent>
+
+            {/* ---------- SECTION 9 ---------- */}
+            <TabsContent value="section9">
+              <Card className="border-2 border-slate-200 shadow-xl">
+                <CardHeader>
+                  <CardTitle>Section 9 of 9: Additional Uploads</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {[
+                    {
+                      name: "resume",
+                      label: "Resume",
+                      accept: ".pdf,.doc,.docx",
+                    },
+                    {
+                      name: "references",
+                      label: "Reference Letters",
+                      multiple: true,
+                    },
+                    {
+                      name: "certifications",
+                      label: "Certifications",
+                      multiple: true,
+                    },
+                    {
+                      name: "moreMedia",
+                      label: "Extra Photos / Media",
+                      multiple: true,
+                    },
+                  ].map((f) => (
+                    <FormField
+                      key={f.name}
+                      control={form.control}
+                      name={f.name as keyof typeof form.watch}
+                      render={({ field: { onChange, ...field } }) => (
+                        <FormItem>
+                          <FormLabel>{f.label}</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Input
+                                type="file"
+                                accept={f.accept}
+                                multiple={!!f.multiple}
+                                onChange={(e) => onChange(e.target.files)}
+                                className="hidden"
+                                id={f.name}
+                              />
+                              <label
+                                htmlFor={f.name}
+                                className="flex h-12 cursor-pointer items-center rounded-xl border border-slate-200 bg-white px-4"
+                              >
+                                <Upload className="mr-3 h-5 w-5 text-slate-500" />
+                                <span className="text-slate-700">
+                                  {form.watch(f.name as any)?.length
+                                    ? `${form.watch(f.name as any).length} file(s)`
+                                    : "Choose file(s)"}
+                                </span>
+                              </label>
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  ))}
+                  <FormField
+                    control={form.control}
+                    name="comments"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Additional Comments</FormLabel>
+                        <FormControl>
+                          <Textarea className={textareaCls} {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+                <CardFooter className="flex justify-between">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={prevTab}
+                    className={pillOutline}
+                  >
+                    Back
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={loading}
+                    className={pillActive}
+                  >
+                    {loading ? "Submitting..." : "Submit Portfolio"}
+                  </Button>
+                </CardFooter>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </form>
+      </Form>
     </div>
   );
 }
