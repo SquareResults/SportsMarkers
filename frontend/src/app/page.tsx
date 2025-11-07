@@ -16,7 +16,6 @@ export default function Home() {
       <PricingSection />
       <HowItWorks />
       <Testimonials />
-      <FeaturedAthletes />
       <Faq />
     </div>
   );
