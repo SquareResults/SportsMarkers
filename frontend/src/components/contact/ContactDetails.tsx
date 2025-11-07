@@ -1,112 +1,121 @@
-export default function ContactDetails() {
+import Link from "next/link";
+import * as React from "react";
+
+/** --- Filled SVG icons (no external deps) --- */
+const MailSolid = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
+    <path d="M1.5 8.67V18a3 3 0 003 3h15a3 3 0 003-3V8.67l-9.28 5.8a3 3 0 01-3.44 0L1.5 8.67Z" />
+    <path d="M22.5 6.75v-.75A3 3 0 0019.5 3h-15A3 3 0 001.5 6v.75l9 5.62a1.5 1.5 0 001.68 0l9-5.62Z" />
+  </svg>
+);
+
+const PhoneSolid = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
+    <path d="M2.25 3.75A1.5 1.5 0 013.75 2.25h3A1.5 1.5 0 018.25 3.7l.39 2.6a2 2 0 01-.5 1.63l-1.3 1.46a14 14 0 006.37 6.37l1.46-1.3a2 2 0 011.63-.5l2.6.39a1.5 1.5 0 011.45 1.5v3a1.5 1.5 0 01-1.5 1.5H18a16.5 16.5 0 01-15.75-15.75v-3Z" />
+  </svg>
+);
+
+const UsersSolid = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
+    <path d="M7.5 8.25a3.75 3.75 0 117.5 0 3.75 3.75 0 01-7.5 0ZM1.5 19.5a6 6 0 0112 0v.75H1.5V19.5ZM16.09 10.5a3.38 3.38 0 100-6.75 3.38 3.38 0 000 6.75ZM15 12.75a6 6 0 016 6v1.5h-4.5V19.5a7.46 7.46 0 00-1.5-4.5V12.75Z" />
+  </svg>
+);
+
+const MapPinSolid = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
+    <path d="M12 2.25a7.5 7.5 0 00-7.5 7.5c0 5.25 7.5 12 7.5 12s7.5-6.75 7.5-12A7.5 7.5 0 0012 2.25Zm0 10.125a3.375 3.375 0 110-6.75 3.375 3.375 0 010 6.75Z" />
+  </svg>
+);
+
+/** --- Color helper for icon badges --- */
+const badgeColors = {
+  blue:   "bg-blue-600 ring-blue-600/20",
+  emerald:"bg-emerald-600 ring-emerald-600/20",
+  purple: "bg-purple-600 ring-purple-600/20",
+  rose:   "bg-rose-600 ring-rose-600/20",
+};
+
+function DetailItem({
+  title,
+  value,
+  icon,
+  color = "blue",
+}: {
+  title: string;
+  value: string | React.ReactNode;
+  icon: React.ReactNode;
+  color?: keyof typeof badgeColors;
+}) {
   return (
-    <div>
-      <h2 className="text-3xl font-bold sm:text-4xl">Contact Details</h2>
-      <div className="mt-8 space-y-4">
-        <div className="flex items-start gap-4">
-          <div className="flex-shrink-0">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="h-6 w-6 text-gray-500"
-            >
-              <path d="M20 4H4c-1.1 0-2 .9-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z" />
-              <polyline points="22,6 12,13 2,6" />
-            </svg>
-          </div>
-          <div>
-            <h3 className="text-lg font-medium">Email</h3>
-            <p className="text-gray-600">contact@squareresults.com</p>
-          </div>
-        </div>
-        <div className="flex items-start gap-4">
-          <div className="flex-shrink-0">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="h-6 w-6 text-gray-500"
-            >
-              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-            </svg>
-          </div>
-          <div>
-            <h3 className="text-lg font-medium">Phone</h3>
-            <p className="text-gray-600">(602) 418-6255</p>
-          </div>
-        </div>
-        <div className="flex items-start gap-4">
-          <div className="flex-shrink-0">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="h-6 w-6 text-gray-500"
-            >
-              <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
-              <rect x="2" y="9" width="4" height="12" />
-              <circle cx="4" cy="4" r="2" />
-            </svg>
-          </div>
-          <div>
-            <h3 className="text-lg font-medium">Partnerships</h3>
-            <p className="text-gray-600">squareresults.wps@gmail.com</p>
-          </div>
-        </div>
-        <div className="flex items-start gap-4">
-          <div className="flex-shrink-0">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="h-6 w-6 text-gray-500"
-            >
-              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
-              <circle cx="12" cy="10" r="3" />
-            </svg>
-          </div>
-          <div>
-            <h3 className="text-lg font-medium">Address</h3>
-            <p className="text-gray-600">SportsMarkers HQ, 410 N Scottsdale Rd, Tempe, AZ 85288</p>
-          </div>
-        </div>
+    <div className="flex items-start gap-3">
+      <div
+        className={`mt-1 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white shadow-sm ring-4 ${badgeColors[color]}`}
+        aria-hidden="true"
+      >
+        {icon}
       </div>
-      <div className="mt-8">
-        <iframe
-          src="https://www.google.com/maps?q=410%20N%20Scottsdale%20Rd%2C%20Tempe%2C%20AZ-85288&output=embed"
-          width="100%"
-          height="420"
-          style={{ border: 0 }}
-          allowFullScreen
-          loading="lazy"
-          referrerPolicy="no-referrer-when-downgrade"
-        ></iframe>
+      <div>
+        <h3 className="text-sm font-semibold text-slate-900">{title}</h3>
+        <p className="text-sm text-slate-600">{value}</p>
       </div>
     </div>
+  );
+}
+
+export default function ContactDetails() {
+  return (
+    <aside className="rounded-2xl border border-slate-200 bg-white shadow-sm p-6 md:p-8">
+      <h2 className="text-2xl md:text-3xl font-bold">Contact Details</h2>
+
+      <div className="mt-6 space-y-5">
+        <DetailItem
+          title="Email"
+          value="contact@squareresults.com"
+          color="blue"
+          icon={<MailSolid className="h-5 w-5" />}
+        />
+
+        <DetailItem
+          title="Phone"
+          value="(602) 418-6255"
+          color="emerald"
+          icon={<PhoneSolid className="h-5 w-5" />}
+        />
+
+        <DetailItem
+          title="Partnerships"
+          value="squareresults.wps@gmail.com"
+          color="purple"
+          icon={<UsersSolid className="h-5 w-5" />}
+        />
+
+        <DetailItem
+          title="Address"
+          value="SportsMarkers HQ, 410 N Scottsdale Rd, Tempe, AZ 85288"
+          color="rose"
+          icon={<MapPinSolid className="h-5 w-5" />}
+        />
+      </div>
+
+      <div className="mt-6">
+        <Link
+          href="https://www.linkedin.com"
+          className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm hover:bg-slate-50"
+        >
+          <span className="inline-block h-2.5 w-2.5 rounded-full bg-slate-700" />
+          LinkedIn
+        </Link>
+      </div>
+
+      <div className="mt-6">
+        <iframe
+          className="w-full h-[340px] rounded-xl border border-slate-200"
+          src="https://www.google.com/maps?q=410%20N%20Scottsdale%20Rd%2C%20Tempe%2C%20AZ-85288&output=embed"
+          loading="lazy"
+          allowFullScreen
+          referrerPolicy="no-referrer-when-downgrade"
+        />
+      </div>
+    </aside>
   );
 }

@@ -1,4 +1,6 @@
-import { LoginForm } from "@/components/auth/LoginForm";
+'use client';
+
+import { LoginForm } from '@/components/auth/LoginForm'; // ← curly braces for named export
 
 export default function LoginPage() {
   return (

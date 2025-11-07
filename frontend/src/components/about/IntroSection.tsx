@@ -9,6 +9,7 @@ export default function IntroSection() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
               <h2 className="text-3xl font-bold sm:text-4xl">Where Talent Meets Opportunity.</h2>
+
               <div className="mt-4 flex flex-wrap gap-4">
                 <div className="flex items-center gap-2 bg-gray-100 px-3 py-1 rounded-full">
                   <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M4 7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V7zm6 2h8v10H10V9zm-2 8H6v-2h2v2zm0-4H6v-2h2v2z"/></svg>
@@ -23,16 +24,19 @@ export default function IntroSection() {
                   <span>Built for speed</span>
                 </div>
               </div>
-              <p className="mt-4 text-lg text-gray-600">
+
+              {/* Justified paragraphs */}
+              <p className="mt-4 text-lg text-gray-600 text-justify leading-relaxed">
                 At SportsMarkers, we believe every athlete deserves to be seen—not just by scouts, but by the world. Visibility shouldn’t be reserved for the few with insider access or viral moments. It should be earned through grit, discipline, and performance—and that’s exactly what we spotlight. SportsMarkers is more than a recruitment tool; it’s a brand platform built to elevate rising talent and give them the credibility and prominence they’ve worked tirelessly to achieve. We’re here to level the playing field, ensuring that athletes from every background have a fair shot at being discovered.
               </p>
-              <p className="mt-4 text-lg text-gray-600">
+              <p className="mt-4 text-lg text-gray-600 text-justify leading-relaxed">
                 Whether you're a high school standout, a college prospect, or an unsigned pro chasing your next opportunity, SportsMarkers is your launchpad. We connect athletes to recruiters, coaches, and programs that align with their goals—backed by verified profiles, performance data, and trust signals that move the needle. Our platform doesn’t just showcase stats; it tells your story. From highlight reels to verified ID checks, we ensure recruiters see the full picture—your skills, your character, and your potential.
               </p>
-              <p className="mt-4 text-lg text-gray-600">
+              <p className="mt-4 text-lg text-gray-600 text-justify leading-relaxed">
                 We’ve built SportsMarkers with one goal in mind: to empower athletes to take control of their journey. That means giving you the tools to build your brand, track your progress, and engage with recruiters who are actively looking for talent like yours. It means creating a community where effort is celebrated, transparency is standard, and every connection is built on trust. Because when athletes are seen for who they truly are—on and off the field—doors open, opportunities multiply, and careers take flight.
               </p>
             </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2">
                 <Image

@@ -13,19 +13,22 @@ export default function AboutSection() {
                 alt="Athletes training on track"
                 width={600}
                 height={400}
-                className="rounded-lg"
+                className="rounded"
               />
             </div>
             <div>
               <h2 className="text-3xl font-bold sm:text-4xl">About</h2>
-              <p className="mt-4 text-lg text-gray-600">
+
+              {/* Main paragraph - justified */}
+              <p className="mt-4 text-lg text-gray-600 text-justify leading-relaxed">
                 We help athletes turn their story into a standout digital
                 portfolio—blending media, stats, and achievements in a single
-                link. Built for students and pros alike, SportsMarker makes it
+                link. Built for students and pros alike, SportsMarkers makes it
                 effortless to showcase highlights, milestones, and personality
                 in a clean, shareable format that coaches and recruiters can
                 explore anywhere.
               </p>
+
               <div className="mt-8 space-y-4">
                 <div className="flex items-start gap-4">
                   <div className="flex-shrink-0">
@@ -48,11 +51,13 @@ export default function AboutSection() {
                     <h3 className="text-lg font-medium">
                       Clean, fast, mobile-first pages
                     </h3>
-                    <p className="text-gray-600">
+                    {/* Justified */}
+                    <p className="text-gray-600 text-justify leading-relaxed">
                       Optimized for any device; loads instantly.
                     </p>
                   </div>
                 </div>
+
                 <div className="flex items-start gap-4">
                   <div className="flex-shrink-0">
                     <svg
@@ -74,11 +79,13 @@ export default function AboutSection() {
                     <h3 className="text-lg font-medium">
                       Highlights, stats, and milestones
                     </h3>
-                    <p className="text-gray-600">
+                    {/* Justified */}
+                    <p className="text-gray-600 text-justify leading-relaxed">
                       Showcase your best moments in one place.
                     </p>
                   </div>
                 </div>
+
                 <div className="flex items-start gap-4">
                   <div className="flex-shrink-0">
                     <svg
@@ -100,12 +107,14 @@ export default function AboutSection() {
                     <h3 className="text-lg font-medium">
                       Shareable profile link
                     </h3>
-                    <p className="text-gray-600">
+                    {/* Justified */}
+                    <p className="text-gray-600 text-justify leading-relaxed">
                       Easy for recruiters and coaches to access.
                     </p>
                   </div>
                 </div>
               </div>
+
             </div>
           </div>
         </div>

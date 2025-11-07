@@ -1,9 +1,10 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
-
-@custom-variant light (&:is(.light *));
+/* Commented out because @custom-variant is not a standard CSS at-rule and causes a compile error.
+   If you need custom Tailwind variants, define them in tailwind.config.js or via a PostCSS/Tailwind plugin. */
+/* @custom-variant dark (&:is(.dark *)); */
+/* @custom-variant light (&:is(.light *)); */
 
 /*:root {
     --background: rgb(255, 255, 255);
@@ -122,10 +123,9 @@
         4px 4px 0px 0px hsl(0 0% 0% / 1), 4px 8px 10px -1px hsl(0 0% 0% / 1);
     --shadow-2xl: 4px 4px 0px 0px hsl(0 0% 0% / 2.5);
 }
-
-@theme inline {
-    --color-background: var(--background);
-    --color-foreground: var(--foreground);
+:root[data-theme="inline"] {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
     --color-card: var(--card);
     --color-card-foreground: var(--card-foreground);
     --color-popover: var(--popover);
@@ -292,7 +292,7 @@
   --shadow-2xl: 4px 4px 0px 0px hsl(0 0% 0% / 2.5);
 }
 
-@theme inline {
+:root[data-theme="inline"] {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -358,10 +358,14 @@ body {
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    border-color: var(--color-border);
+    outline-color: var(--color-ring);
+    outline-style: solid;
+    outline-width: 1px;
   }
   body {
-    @apply bg-background text-foreground;
+    background-color: var(--color-background);
+    color: var(--color-foreground);
   }
 }
 

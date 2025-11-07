@@ -8,9 +8,9 @@ import Section from "@/components/Section";
 
 const faqs = [
   {
-    question: "What is SportsMarker?",
+    question: "What is SportsMarkers?",
     answer:
-      "SportsMarker is a platform that helps athletes create professional digital portfolios to showcase their skills, achievements, and stats to recruiters and coaches.",
+      "SportsMarkers is a platform that helps athletes create professional digital portfolios to showcase their skills, achievements, and stats to recruiters and coaches.",
   },
   {
     question: "How much does it cost?",
