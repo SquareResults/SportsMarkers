@@ -280,7 +280,6 @@ export function CreateProfileForm({
                   className="relative flex-shrink-0 flex flex-col items-center gap-1 whitespace-nowrap px-5 py-3 text-sm font-medium text-slate-500 hover:text-emerald-600 transition-colors duration-200 ease-in-out focus:outline-none data-[state=active]:text-emerald-600 data-[state=active]:shadow-none after:absolute after:bottom-[-1px] after:left-0 after:right-0 after:h-0.5 after:bg-emerald-600 after:scale-x-0 after:transition-transform after:duration-300 after:ease-in-out data-[state=active]:after:scale-x-100"
                 >
                   <span className="font-bold text-base">{tab.label}</span>
-                  <span className="text-xs">{tab.desc}</span>
                 </TabsTrigger>
               ))}
             </TabsList>
