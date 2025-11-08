@@ -3,6 +3,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import { useSupabase } from "@/components/SupabaseProvider";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -32,9 +34,20 @@ export default function ContactForm() {
   });
 
   const { isSubmitting, isValid } = form.formState;
+  const supabase = useSupabase();
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    const { error } = await supabase
+      .from("contact_submissions")
+      .insert([values]);
+
+    if (error) {
+      console.error(error);
+      toast.error("There was an error submitting your form. Please try again.");
+    } else {
+      toast.success("Your message has been sent successfully!");
+      form.reset();
+    }
   }
 
   // Fixed-light field styles
@@ -44,7 +57,9 @@ export default function ContactForm() {
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
-      <h2 className="text-2xl md:text-3xl font-bold text-slate-900">Send us a Message</h2>
+      <h2 className="text-2xl md:text-3xl font-bold text-slate-900">
+        Send us a Message
+      </h2>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="mt-6 space-y-6">
@@ -56,7 +71,11 @@ export default function ContactForm() {
               <FormItem>
                 <FormLabel className="text-slate-700">Full Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="John Doe" className={fieldBase} {...field} />
+                  <Input
+                    placeholder="John Doe"
+                    className={`${fieldBase} h-11`}
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -72,7 +91,12 @@ export default function ContactForm() {
                 <FormItem>
                   <FormLabel className="text-slate-700">Email</FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="you@example.com" className={fieldBase} {...field} />
+                    <Input
+                      type="email"
+                      placeholder="you@example.com"
+                      className={`${fieldBase} h-11`}
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -83,9 +107,15 @@ export default function ContactForm() {
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-slate-700">Phone (optional)</FormLabel>
+                  <FormLabel className="text-slate-700">
+                    Phone (optional)
+                  </FormLabel>
                   <FormControl>
-                    <Input placeholder="(555) 000-1234" className={fieldBase} {...field} />
+                    <Input
+                      placeholder="(555) 000-1234"
+                      className={`${fieldBase} h-11`}
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -103,7 +133,7 @@ export default function ContactForm() {
                   <FormLabel className="text-slate-700">Topic</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <SelectTrigger className={fieldBase}>
+                      <SelectTrigger className={`${fieldBase} h-11`}>
                         <SelectValue placeholder="Select a topic" />
                       </SelectTrigger>
                     </FormControl>
@@ -126,7 +156,7 @@ export default function ContactForm() {
                   <FormLabel className="text-slate-700">Sport (optional)</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <SelectTrigger className={fieldBase}>
+                      <SelectTrigger className={`${fieldBase} h-11`}>
                         <SelectValue placeholder="Choose sport" />
                       </SelectTrigger>
                     </FormControl>
@@ -153,7 +183,7 @@ export default function ContactForm() {
                 <FormControl>
                   <Textarea
                     placeholder="How can we help?"
-                    className="min-h-[140px] rounded-xl border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 hover:border-slate-400 focus-visible:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-300/60"
+                    className={`${fieldBase} min-h-[140px]`}
                     {...field}
                   />
                 </FormControl>
@@ -193,7 +223,8 @@ export default function ContactForm() {
           </div>
 
           <p className="mt-2 text-xs text-slate-500">
-            By submitting, you agree to our terms. We’ll only use your info to respond.
+            By submitting, you agree to our terms. We’ll only use your info to
+            respond.
           </p>
         </form>
       </Form>

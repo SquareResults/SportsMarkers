@@ -35,6 +35,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Upload } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
 
 const ACCEPTED_IMAGE_TYPES = [
   "image/jpeg",
@@ -167,7 +168,7 @@ export function CreateProfileForm({
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
-      alert("You must be logged in to create a portfolio.");
+      toast.error("You must be logged in to create a portfolio.");
       setLoading(false);
       return;
     }
@@ -260,9 +261,10 @@ export function CreateProfileForm({
     };
 
     const { error } = await supabase.from("portfolios").insert([portfolioData]);
-    if (error) alert("Error: " + error.message);
-    else {
-      alert("Portfolio created!");
+    if (error) {
+      toast.error("Error: " + error.message);
+    } else {
+      toast.success("Portfolio created!");
       router.push("/profile");
     }
     setLoading(false);

@@ -22,6 +22,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { toast } from "sonner";
 
 /** Hide on scroll down, show on scroll up */
 function useScrollHide({
@@ -75,13 +76,7 @@ function initialsFromUser(user: User | null) {
 }
 
 /** Account menu — fixed light style (no dark-mode variants) */
-function UserMenu({
-  user,
-  onLogout,
-}: {
-  user: User;
-  onLogout: () => void;
-}) {
+function UserMenu({ user, onLogout }: { user: User; onLogout: () => void }) {
   const name =
     (user.user_metadata?.full_name as string) ||
     (user.user_metadata?.name as string) ||
@@ -168,19 +163,28 @@ export default function Header() {
 
   useEffect(() => {
     const run = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       setUser(user ?? null);
     };
     run();
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_, session) => {
       setUser(session?.user ?? null);
     });
     return () => subscription.unsubscribe();
   }, [supabase]);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success("Logged out successfully!");
+      setUser(null);
+    }
   };
 
   const nav = [
@@ -219,14 +223,23 @@ export default function Header() {
       <div className="mx-auto flex h-16 max-w-[1200px] items-center gap-4 px-4 sm:h-20 sm:px-6">
         {/* Left: logo */}
         <Link href="/" className="flex items-center gap-3" aria-label="Go home">
-          <Image src="/images/logo.png" alt="SportsMarkers" width={36} height={36} priority />
+          <Image
+            src="/images/logo.png"
+            alt="SportsMarkers"
+            width={36}
+            height={36}
+            priority
+          />
           <span className="text-xl font-extrabold tracking-tight text-slate-900">
             SportsMarkers
           </span>
         </Link>
 
         {/* Center: nav */}
-        <nav className="hidden flex-1 items-center justify-center sm:flex" aria-label="Primary">
+        <nav
+          className="hidden flex-1 items-center justify-center sm:flex"
+          aria-label="Primary"
+        >
           <ul className="flex items-center gap-8">
             {nav.map((item) => (
               <li key={item.href}>
@@ -255,7 +268,11 @@ export default function Header() {
               <Button
                 asChild
                 className={
-                  showingAuthPage ? (onLogin ? pillActive : pillOutline) : pillActive
+                  showingAuthPage
+                    ? onLogin
+                      ? pillActive
+                      : pillOutline
+                    : pillActive
                 }
               >
                 <Link href="/login" aria-current={onLogin ? "page" : undefined}>
@@ -265,10 +282,17 @@ export default function Header() {
               <Button
                 asChild
                 className={
-                  showingAuthPage ? (onSignup ? pillActive : pillOutline) : pillActive
+                  showingAuthPage
+                    ? onSignup
+                      ? pillActive
+                      : pillOutline
+                    : pillActive
                 }
               >
-                <Link href="/signup" aria-current={onSignup ? "page" : undefined}>
+                <Link
+                  href="/signup"
+                  aria-current={onSignup ? "page" : undefined}
+                >
                   Sign Up
                 </Link>
               </Button>
@@ -280,7 +304,12 @@ export default function Header() {
         <div className="ml-auto flex items-center gap-2 sm:hidden">
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-full" aria-label="Open menu">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full"
+                aria-label="Open menu"
+              >
                 <Menu />
               </Button>
             </SheetTrigger>
@@ -289,7 +318,10 @@ export default function Header() {
                 <SheetTitle>Menu</SheetTitle>
               </SheetHeader>
 
-              <nav className="mt-6 flex flex-col gap-3" aria-label="Mobile Primary">
+              <nav
+                className="mt-6 flex flex-col gap-3"
+                aria-label="Mobile Primary"
+              >
                 {nav.map((item) => (
                   <Link
                     key={item.href}
@@ -324,7 +356,11 @@ export default function Header() {
                     <Button
                       asChild
                       className={
-                        showingAuthPage ? (onLogin ? pillActive : pillOutline) : pillActive
+                        showingAuthPage
+                          ? onLogin
+                            ? pillActive
+                            : pillOutline
+                          : pillActive
                       }
                     >
                       <Link href="/login">Login</Link>
@@ -332,7 +368,11 @@ export default function Header() {
                     <Button
                       asChild
                       className={
-                        showingAuthPage ? (onSignup ? pillActive : pillOutline) : pillActive
+                        showingAuthPage
+                          ? onSignup
+                            ? pillActive
+                            : pillOutline
+                          : pillActive
                       }
                     >
                       <Link href="/signup">Sign Up</Link>

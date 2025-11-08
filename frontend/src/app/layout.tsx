@@ -3,6 +3,7 @@ import "./globals.css";
 import { SupabaseProvider } from "@/components/SupabaseProvider";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
   title: "SportsMarkers — Showcase Your Athletic Journey",
@@ -10,7 +11,11 @@ export const metadata: Metadata = {
     "Create stunning portfolios, stay updated with sports news, and discover events near you.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
       <body className="antialiased overflow-x-hidden">
@@ -18,6 +23,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Header />
           <main className="flex min-h-screen flex-col">{children}</main>
           <Footer />
+          <Toaster />
         </SupabaseProvider>
       </body>
     </html>
