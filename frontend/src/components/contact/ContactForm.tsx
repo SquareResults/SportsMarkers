@@ -9,8 +9,11 @@ import {
   Form, FormControl, FormField, FormItem, FormLabel, FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { ArrowRight, Eraser } from "lucide-react";
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -25,15 +28,25 @@ export default function ContactForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: { name: "", email: "", phone: "", topic: "", sport: "", message: "" },
+    mode: "onChange",
   });
 
+  const { isSubmitting, isValid } = form.formState;
+
   function onSubmit(values: z.infer<typeof formSchema>) {
-    // TODO: hook up to your endpoint / email service
     console.log(values);
   }
 
+  // Field styles (from previous step)
+  const fieldBase =
+    "rounded-xl border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 " +
+    "hover:border-slate-400 focus-visible:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-300/60";
+  const fieldBaseDark =
+    "dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 " +
+    "dark:hover:border-slate-500 dark:focus:border-emerald-500 dark:focus:ring-emerald-700/40";
+
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-6 md:p-8">
+    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:p-8 dark:border-slate-800 dark:bg-slate-900">
       <h2 className="text-2xl md:text-3xl font-bold">Send us a Message</h2>
 
       <Form {...form}>
@@ -45,14 +58,14 @@ export default function ContactForm() {
               <FormItem>
                 <FormLabel>Full Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="John Doe" {...field} />
+                  <Input placeholder="John Doe" className={`${fieldBase} ${fieldBaseDark} h-11`} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <FormField
               control={form.control}
               name="email"
@@ -60,13 +73,12 @@ export default function ContactForm() {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="you@example.com" {...field} />
+                    <Input type="email" placeholder="you@example.com" className={`${fieldBase} ${fieldBaseDark} h-11`} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
             <FormField
               control={form.control}
               name="phone"
@@ -74,7 +86,7 @@ export default function ContactForm() {
                 <FormItem>
                   <FormLabel>Phone (optional)</FormLabel>
                   <FormControl>
-                    <Input placeholder="(555) 000-1234" {...field} />
+                    <Input placeholder="(555) 000-1234" className={`${fieldBase} ${fieldBaseDark} h-11`} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -82,7 +94,7 @@ export default function ContactForm() {
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <FormField
               control={form.control}
               name="topic"
@@ -91,7 +103,7 @@ export default function ContactForm() {
                   <FormLabel>Topic</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className={`${fieldBase} ${fieldBaseDark} h-11`}>
                         <SelectValue placeholder="Select a topic" />
                       </SelectTrigger>
                     </FormControl>
@@ -106,7 +118,6 @@ export default function ContactForm() {
                 </FormItem>
               )}
             />
-
             <FormField
               control={form.control}
               name="sport"
@@ -115,7 +126,7 @@ export default function ContactForm() {
                   <FormLabel>Sport (optional)</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className={`${fieldBase} ${fieldBaseDark} h-11`}>
                         <SelectValue placeholder="Choose sport" />
                       </SelectTrigger>
                     </FormControl>
@@ -139,21 +150,47 @@ export default function ContactForm() {
               <FormItem>
                 <FormLabel>Message</FormLabel>
                 <FormControl>
-                  <Textarea placeholder="How can we help?" className="min-h-[140px]" {...field} />
+                  <Textarea placeholder="How can we help?" className={`${fieldBase} ${fieldBaseDark} min-h-[140px]`} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          <div>
-            <Button type="submit" className="rounded-full px-6">
-              Send Message
+          {/* Buttons */}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            {/* Primary: gradient pill + states */}
+            <Button
+              type="submit"
+              disabled={isSubmitting || !isValid}
+              className="h-12 w-full sm:w-auto rounded-full px-6 font-semibold text-white
+                         bg-gradient-to-r from-emerald-500 via-emerald-600 to-emerald-700
+                         hover:from-emerald-600 hover:via-emerald-700 hover:to-emerald-800
+                         focus-visible:ring-2 focus-visible:ring-emerald-400/70 focus-visible:outline-none
+                         shadow-[0_8px_20px_rgba(16,185,129,0.25)]
+                         disabled:opacity-70 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? "Sending…" : "Send Message"}
+              <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
-            <p className="mt-2 text-xs text-slate-500">
-              By submitting, you agree to our terms. We’ll only use your info to respond.
-            </p>
+
+            {/* Secondary: clear/ghost pill */}
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => form.reset()}
+              className="h-12 w-full sm:w-auto rounded-full px-6 font-medium
+                         text-slate-700 hover:bg-slate-100
+                         dark:text-slate-200 dark:hover:bg-slate-800"
+            >
+              <Eraser className="mr-2 h-4 w-4" />
+              Clear
+            </Button>
           </div>
+
+          <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+            By submitting, you agree to our terms. We’ll only use your info to respond.
+          </p>
         </form>
       </Form>
     </div>

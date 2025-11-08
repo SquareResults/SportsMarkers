@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, KeyboardEvent } from "react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -45,7 +45,11 @@ export default function FilterSection({
     onFilter({ name: "", sport: "all", position: "all", year: "all", location: "all" });
   };
 
-  // Shared “pill” classes
+  const onKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") handleSearch();
+  };
+
+  // Shared pill styles
   const pill = "h-12 rounded-full";
   const pillInput = `${pill} px-5`;
   const pillSelect = `${pill} px-5 text-base`;
@@ -53,16 +57,18 @@ export default function FilterSection({
   return (
     <section className="py-6">
       <div className="container mx-auto px-4">
-        <div className="rounded-2xl border border-muted/40 bg-white shadow-sm">
+        {/* Card: removed outer border; use subtle shadow + translucent bg */}
+        <div className="rounded-2xl bg-white/80 shadow-sm backdrop-blur-sm dark:bg-slate-900/70">
           <div className="flex flex-col gap-4 p-4 sm:p-5">
             {/* Controls */}
-            <div className="grid grid-cols-1 items-center gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-[1.2fr_1fr_1fr_1fr_1fr_auto_auto]">
+            <div className="grid grid-cols-1 items-center gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-[1.3fr_1fr_1fr_1fr_1fr_auto_auto]">
               {/* Name */}
               <Input
                 placeholder="Search by name…"
                 className={pillInput}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                onKeyDown={onKeyDown}
               />
 
               {/* Sport */}
@@ -121,24 +127,22 @@ export default function FilterSection({
               {/* Buttons */}
               <Button
                 onClick={handleSearch}
-                className="h-12 rounded-full bg-[#2F62F5] px-6 text-white hover:bg-[#2a55d3]"
+                className="h-12 rounded-full px-6 text-white
+                           bg-gradient-to-r from-emerald-500 via-emerald-600 to-emerald-700
+                           hover:from-emerald-600 hover:via-emerald-700 hover:to-emerald-800
+                           shadow-[0_6px_14px_rgba(16,185,129,0.25)]"
               >
                 Search
               </Button>
+
               <Button
-                variant="outline"
+                variant="ghost"
                 onClick={handleClear}
-                className="h-12 rounded-full px-6"
+                className="h-12 rounded-full px-6 text-slate-700 hover:bg-slate-100
+                           dark:text-slate-200 dark:hover:bg-slate-800"
               >
                 Clear
               </Button>
-            </div>
-
-            {/* Count */}
-            <div className="flex justify-end">
-              <span className="text-sm text-muted-foreground">
-                {totalCount} {totalCount === 1 ? "athlete" : "athletes"} found
-              </span>
             </div>
           </div>
         </div>

@@ -78,7 +78,6 @@
 
     /* Centered layout knobs */
     --page-max: 1500px;
-    /* side padding now fluid for better adaptability */
     --side-pad: clamp(16px, 4vw, 28px);
 
     /* header height for offsets (tune if your header changes) */
@@ -222,11 +221,9 @@ body {
     letter-spacing: var(--tracking-normal);
     background-color: var(--color-background);
     color: var(--color-foreground);
-    /* eliminate horizontal scrollbars at any zoom */
     overflow-x: hidden;
 }
 
-/* media elements behave responsively by default */
 img,
 svg,
 video,
@@ -236,14 +233,12 @@ canvas {
     height: auto;
 }
 
-/* Centering container only (do not constrain every section) */
 .container {
     width: min(100%, var(--page-max));
     margin-inline: auto;
     padding-inline: var(--side-pad);
 }
 
-/* Keep your focus style but scoped properly */
 :focus,
 :focus-visible {
     outline: none !important;
@@ -263,16 +258,13 @@ header.hero,
     align-items: center !important;
     text-align: center !important;
     width: 100%;
-    /* Use svh for mobile browser chrome, fallback to vh */
     min-height: min(92svh, 900px);
 }
 
-/* If the hero sits under a sticky header, bump it up */
 .offset-header {
     margin-top: calc(-1 * var(--header-h));
 }
 
-/* Full-bleed utility for sections that should span edge-to-edge */
 .full-bleed {
     margin-left: calc(50% - 50vw);
     margin-right: calc(50% - 50vw);
@@ -284,7 +276,6 @@ header.hero,
     line-height: 1.05;
     font-weight: 800;
 }
-
 .fluid-lead {
     font-size: clamp(1rem, 1.1vw + 0.75rem, 1.25rem);
     line-height: 1.6;
@@ -301,23 +292,19 @@ header.hero,
     .text-balance {
         text-wrap: balance;
     }
-
     .mx-auto {
         margin-left: auto !important;
         margin-right: auto !important;
     }
-
     .flex-center {
         display: flex;
         justify-content: center !important;
         align-items: center !important;
     }
-
     .grid-center {
         display: grid;
         place-items: center !important;
     }
-
     .force-center {
         text-align: center !important;
         justify-content: center !important;
@@ -325,7 +312,6 @@ header.hero,
         place-content: center !important;
         place-items: center !important;
     }
-
     /* top-only soft shadow for removing “black borders” look */
     .shadow-top-soft {
         box-shadow: 0 -8px 24px -12px rgb(0 0 0 / 0.25);
@@ -343,25 +329,65 @@ header.hero,
    Marquee animations (kept)
 --------------------------- */
 @keyframes scroll-left {
-    from {
-        transform: translateX(0);
-    }
-    to {
-        transform: translateX(-50%);
-    }
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
 }
 @keyframes scroll-right {
-    from {
-        transform: translateX(-50%);
-    }
-    to {
-        transform: translateX(0);
-    }
+    from { transform: translateX(-50%); }
+    to   { transform: translateX(0); }
 }
+.animate-scroll-left { animation: scroll-left linear infinite; }
+.animate-scroll-right { animation: scroll-right linear infinite; }
 
-.animate-scroll-left {
-    animation: scroll-left linear infinite;
-}
-.animate-scroll-right {
-    animation: scroll-right linear infinite;
+/* ---------------------------
+   SOLID DROPDOWNS (new)
+   - Forces solid backgrounds for Radix popper panels (Select, Menu, Popover)
+   - Makes Select triggers (pills) solid too
+--------------------------- */
+@layer components {
+  /* Popper content wrapper -> actual panel */
+  [data-radix-popper-content-wrapper] > div {
+    /* Explicit replacements for Tailwind @apply to avoid "Unknown at rule @apply" */
+    background-color: rgb(255 255 255) !important; /* ensure opaque */
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-md);
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background-clip: padding-box;
+    isolation: isolate;
+  }
+  /* Dark mode background equivalent to Tailwind's dark:bg-slate-900 */
+  .dark [data-radix-popper-content-wrapper] > div {
+    background-color: rgb(15 23 42) !important; /* tailwind slate-900 fallback */
+  }
+
+  /* Solid Select triggers (the button you click) */
+  button[role="combobox"],
+  .select-trigger {
+    background-color: rgb(255 255 255) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* dark-mode override for triggers */
+  .dark button[role="combobox"],
+  .dark .select-trigger {
+    background-color: rgb(15 23 42) !important; /* tailwind slate-900 fallback */
+  }
+
+  /* Solid hover for items inside panels */
+  [data-radix-popper-content-wrapper] > div [role="option"],
+  [data-radix-popper-content-wrapper] > div [role="menuitem"] {
+    /* Hover backgrounds are defined in the :hover rules below; avoid @apply in plain CSS */
+    cursor: pointer;
+  }
+
+  [data-radix-popper-content-wrapper] > div [role="option"]:hover,
+  [data-radix-popper-content-wrapper] > div [role="menuitem"]:hover {
+    background-color: rgb(241 245 249); /* tailwind slate-100 */
+  }
+  .dark [data-radix-popper-content-wrapper] > div [role="option"]:hover,
+  .dark [data-radix-popper-content-wrapper] > div [role="menuitem"]:hover {
+    background-color: rgb(30 41 59); /* tailwind slate-800 */
+  }
 }
