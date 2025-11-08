@@ -1,29 +1,29 @@
-'use client';
+"use client";
 
-import React, { useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
+import React, { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-} from '@/components/ui/carousel';
-import type { CarouselApi } from '@/components/ui/carousel';
-import Autoplay from 'embla-carousel-autoplay';
-import { useSupabase } from '@/components/SupabaseProvider';
+} from "@/components/ui/carousel";
+import type { CarouselApi } from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
+import { useSupabase } from "@/components/SupabaseProvider";
 
 type Slide =
-  | { kind: 'logo'; sport: string; image: string }
-  | { kind: 'photo'; sport: string; image: string };
+  | { kind: "logo"; sport: string; image: string }
+  | { kind: "photo"; sport: string; image: string };
 
 const slides: Slide[] = [
   // First slide = SportsMarkers logo
-  { kind: 'logo', sport: 'SportsMarkers', image: '/images/logo.png' },
+  { kind: "logo", sport: "SportsMarkers", image: "/images/logo.png" },
   // Other slides = regular photos
-  { kind: 'photo', sport: 'Basketball', image: '/images/Basket.jpg' },
-  { kind: 'photo', sport: 'Soccer', image: '/images/Football.jpg' },
-  { kind: 'photo', sport: 'Track', image: '/images/Track.png' },
+  { kind: "photo", sport: "Basketball", image: "/images/Basket.jpg" },
+  { kind: "photo", sport: "Soccer", image: "/images/Football.jpg" },
+  { kind: "photo", sport: "Track", image: "/images/Track.png" },
 ];
 
 export default function Hero() {
@@ -37,12 +37,16 @@ export default function Hero() {
   // session state
   useEffect(() => {
     const run = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       setIsLoggedIn(!!session);
     };
     run();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_, session) => {
       setIsLoggedIn(!!session);
     });
 
@@ -58,18 +62,18 @@ export default function Hero() {
     setSelectedIndex(api.selectedScrollSnap());
     const onSelect = () => setSelectedIndex(api.selectedScrollSnap());
 
-    api.on('select', onSelect);
+    api.on("select", onSelect);
     return () => {
-      api.off('select', onSelect);
+      api.off("select", onSelect);
     };
   }, [api]);
 
   return (
     <section
-      className="relative h-[92vh] min-h-[640px] w-screen overflow-hidden pt-0"
+      className="relative h-screen min-h-[640px] w-screen overflow-hidden pt-0"
       style={{
-        marginLeft: 'calc(50% - 50vw)',
-        marginRight: 'calc(50% - 50vw)',
+        marginLeft: "calc(50% - 50vw)",
+        marginRight: "calc(50% - 50vw)",
         paddingLeft: 0,
         paddingRight: 0,
         marginTop: -64,
@@ -86,15 +90,17 @@ export default function Hero() {
         <CarouselContent>
           {slides.map((slide, i) => (
             <CarouselItem key={i}>
-              {slide.kind === 'photo' ? (
+              {slide.kind === "photo" ? (
                 <div
-                  className="h-[92vh] min-h-[640px] w-full bg-cover bg-center"
+                  className="h-screen min-h-[640px] w-full bg-cover bg-center"
                   style={{ backgroundImage: `url(${slide.image})` }}
                 />
               ) : (
                 // Logo slide
-                <div className="relative flex h-[92vh] min-h-[640px] w-full items-center justify-center
-                                bg-[radial-gradient(110%_100%_at_20%_0%,#15294b_0%,#0b1530_55%,#0a1226_100%)]">
+                <div
+                  className="relative flex h-screen min-h-[640px] w-full items-center justify-center
+                                bg-[radial-gradient(110%_100%_at_20%_0%,#15294b_0%,#0b1530_55%,#0a1226_100%)]"
+                >
                   {/* Simple <img> works fine for SVG logos */}
                   <img
                     src={slide.image}
@@ -131,13 +137,13 @@ export default function Hero() {
 
         <div className="mt-8 flex items-center gap-4">
           <Link
-            href={isLoggedIn ? '/create' : '/login'}
+            href={isLoggedIn ? "/create" : "/login"}
             className="inline-flex items-center rounded-full bg-gradient-to-b from-[#32D071] to-[#20B85E] px-6 py-3 text-base font-semibold text-white shadow-md hover:opacity-95"
           >
-            {isLoggedIn ? 'Create Portfolio' : 'Get Started →'}
+            {isLoggedIn ? "Create Portfolio" : "Get Started →"}
           </Link>
 
-        <Link
+          <Link
             href="/athletes"
             className="inline-flex items-center rounded-full border border-white/70 bg-white/10 px-6 py-3 text-base font-semibold text-white backdrop-blur-sm hover:bg-white/20"
           >
@@ -151,7 +157,7 @@ export default function Hero() {
               key={i}
               onClick={() => api?.scrollTo(i)}
               className={`h-2.5 w-2.5 rounded-full transition ${
-                selectedIndex === i ? 'bg-white' : 'bg-white/40'
+                selectedIndex === i ? "bg-white" : "bg-white/40"
               }`}
               aria-label={`Go to slide ${i + 1}`}
             />
