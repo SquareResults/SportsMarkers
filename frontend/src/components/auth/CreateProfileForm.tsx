@@ -187,11 +187,37 @@ export function CreateProfileForm({
       return data.path;
     };
 
+    const uploadMultipleFiles = async (files: FileList, bucket: string) => {
+      const urls = [];
+      for (const file of Array.from(files)) {
+        const url = await uploadFile(file, bucket);
+        if (url) {
+          urls.push(url);
+        }
+      }
+      return urls.length > 0 ? urls : null;
+    };
+
     const profilePictureUrl = values.profilePicture?.[0]
       ? await uploadFile(values.profilePicture[0], "avatars")
       : null;
     const logoUrl = values.logoUpload?.[0]
       ? await uploadFile(values.logoUpload[0], "logos")
+      : null;
+    const actionPhotosUrls = values.actionPhotos
+      ? await uploadMultipleFiles(values.actionPhotos, "action-photos")
+      : null;
+    const resumeUrl = values.resume?.[0]
+      ? await uploadFile(values.resume[0], "resumes")
+      : null;
+    const referencesUrl = values.references?.[0]
+      ? await uploadFile(values.references[0], "references")
+      : null;
+    const certificationsUrl = values.certifications?.[0]
+      ? await uploadFile(values.certifications[0], "certifications")
+      : null;
+    const moreMediaUrls = values.moreMedia
+      ? await uploadMultipleFiles(values.moreMedia, "more-media")
       : null;
 
     const portfolioData = {
@@ -210,6 +236,7 @@ export function CreateProfileForm({
       video_links: values.videoLinks
         ? values.videoLinks.split("\n").filter(Boolean)
         : null,
+      action_photos_urls: actionPhotosUrls,
       press: values.press || null,
       media_links: values.mediaLinks
         ? values.mediaLinks.split("\n").filter(Boolean)
@@ -225,6 +252,10 @@ export function CreateProfileForm({
         : null,
       has_logo: values.hasLogo === "Yes",
       logo_url: logoUrl,
+      resume_url: resumeUrl,
+      references_url: referencesUrl,
+      certifications_url: certificationsUrl,
+      more_media_urls: moreMediaUrls,
       comments: values.comments || null,
     };
 
