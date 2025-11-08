@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useSupabase } from "@/components/SupabaseProvider";
 import { User } from "@supabase/supabase-js";
 import { usePathname } from "next/navigation";
-import { ChevronRight, LogOut, Menu, User2, Settings } from "lucide-react";
+import { ChevronRight, LogOut, Menu, User2 } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -58,7 +58,7 @@ function useScrollHide({
   return { hidden, atTop };
 }
 
-/** Build a simple initial for the avatar */
+/** Build initials for the avatar */
 function initialsFromUser(user: User | null) {
   const name =
     (user?.user_metadata?.full_name as string) ||
@@ -71,11 +71,10 @@ function initialsFromUser(user: User | null) {
   const first = parts[0]?.[0] ?? "";
   const last = parts[1]?.[0] ?? "";
   const init = (first + last).toUpperCase();
-  // fallback to email first letter if needed
   return init || (clean[0] || "U").toUpperCase();
 }
 
-/** YouTube-style account menu */
+/** Account menu — fixed light style (no dark-mode variants) */
 function UserMenu({
   user,
   onLogout,
@@ -104,15 +103,17 @@ function UserMenu({
       <DropdownMenuContent
         align="end"
         sideOffset={10}
-        className="w-[320px] rounded-2xl border border-slate-200 bg-white p-3 shadow-lg dark:border-slate-800 dark:bg-slate-900"
+        className="w-[320px] rounded-2xl border border-slate-200 bg-white p-3 shadow-lg"
       >
-        {/* Header block like the screenshot */}
+        {/* Header block */}
         <div className="flex items-center gap-3 rounded-xl p-2">
           <div className="grid h-12 w-12 place-items-center rounded-full bg-[#1e3a8a] text-white font-semibold">
             {initials}
           </div>
           <div className="min-w-0">
-            <div className="truncate text-[15px] font-semibold">{name || email}</div>
+            <div className="truncate text-[15px] font-semibold text-slate-900">
+              {name || email}
+            </div>
             {name && (
               <div className="truncate text-sm text-slate-500">{email}</div>
             )}
@@ -131,26 +132,25 @@ function UserMenu({
         <DropdownMenuItem asChild>
           <Link
             href="/create"
-            className="flex items-center justify-between gap-3 rounded-xl px-3 py-3 hover:bg-slate-100 dark:hover:bg-slate-800"
+            className="flex items-center justify-between gap-3 rounded-xl px-3 py-3 hover:bg-slate-100"
           >
             <span className="flex items-center gap-3">
-              <User2 className="h-5 w-5 text-slate-700 dark:text-slate-300" />
-              <span className="text-[15px]">Profile</span>
+              <User2 className="h-5 w-5 text-slate-700" />
+              <span className="text-[15px] text-slate-800">Profile</span>
             </span>
             <ChevronRight className="h-4 w-4 text-slate-400" />
           </Link>
         </DropdownMenuItem>
 
-
         <DropdownMenuSeparator className="my-2" />
 
         <button
           onClick={onLogout}
-          className="flex w-full items-center justify-between gap-3 rounded-xl px-3 py-3 text-left hover:bg-slate-100 dark:hover:bg-slate-800"
+          className="flex w-full items-center justify-between gap-3 rounded-xl px-3 py-3 text-left hover:bg-slate-100"
         >
           <span className="flex items-center gap-3">
-            <LogOut className="h-5 w-5 text-slate-700 dark:text-slate-300" />
-            <span className="text-[15px]">Sign out</span>
+            <LogOut className="h-5 w-5 text-slate-700" />
+            <span className="text-[15px] text-slate-800">Sign out</span>
           </span>
           <ChevronRight className="h-4 w-4 text-slate-400" />
         </button>
@@ -220,7 +220,7 @@ export default function Header() {
         {/* Left: logo */}
         <Link href="/" className="flex items-center gap-3" aria-label="Go home">
           <Image src="/images/logo.png" alt="SportsMarkers" width={36} height={36} priority />
-          <span className="text-xl font-extrabold tracking-tight text-foreground">
+          <span className="text-xl font-extrabold tracking-tight text-slate-900">
             SportsMarkers
           </span>
         </Link>
@@ -235,7 +235,7 @@ export default function Header() {
                   className={
                     isActive(item.href)
                       ? "px-5 py-2 rounded-full font-semibold bg-[#254485] text-white shadow-md transition"
-                      : "px-5 py-2 rounded-full font-semibold text-foreground hover:text-[#254485] transition"
+                      : "px-5 py-2 rounded-full font-semibold text-slate-900 hover:text-[#254485] transition"
                   }
                   aria-current={isActive(item.href) ? "page" : undefined}
                 >
@@ -249,7 +249,6 @@ export default function Header() {
         {/* Right: auth / account */}
         <div className="ml-auto hidden items-center gap-3 sm:flex">
           {user ? (
-            // New account menu like your screenshot
             <UserMenu user={user} onLogout={handleLogout} />
           ) : (
             <>
@@ -298,7 +297,7 @@ export default function Header() {
                     className={
                       isActive(item.href)
                         ? "rounded-full px-4 py-2 font-semibold bg-[#254485] text-white"
-                        : "rounded-full px-4 py-2 font-semibold hover:bg-muted"
+                        : "rounded-full px-4 py-2 font-semibold hover:bg-slate-100"
                     }
                     aria-current={isActive(item.href) ? "page" : undefined}
                   >
@@ -312,7 +311,7 @@ export default function Header() {
                   <>
                     <Link
                       href="/create"
-                      className="rounded-full px-4 py-2 font-semibold hover:bg-muted"
+                      className="rounded-full px-4 py-2 font-semibold hover:bg-slate-100"
                     >
                       Profile
                     </Link>

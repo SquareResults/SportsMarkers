@@ -12,7 +12,7 @@ export default function Join() {
             <h2 className="text-balance text-4xl font-extrabold tracking-tight sm:text-5xl">
               Join the Movement
             </h2>
-            <p className="mt-4 text-pretty text-lg leading-relaxed text-slate-600 dark:text-slate-300">
+            <p className="mt-4 text-pretty text-lg leading-relaxed text-slate-600">
               Whether you're an athlete, coach, recruiter, or fan—SportsMarkers is
               your home for discovery, connection, and growth. When talent meets
               opportunity, greatness follows.
@@ -23,9 +23,10 @@ export default function Join() {
               <Button
                 asChild
                 size="lg"
-                className="rounded-full px-7 h-12 shadow-sm
-                           bg-emerald-300 hover:bg-emerald-400 text-emerald-900
-                           dark:bg-emerald-400 dark:hover:bg-emerald-500 dark:text-slate-900"
+                className="h-12 rounded-full px-7 text-emerald-900
+                           bg-emerald-300 hover:bg-emerald-400
+                           shadow-sm focus-visible:outline-none
+                           focus-visible:ring-2 focus-visible:ring-emerald-400/70"
               >
                 <Link href="/create" aria-label="Start your profile">
                   Start Your Profile
@@ -33,14 +34,14 @@ export default function Join() {
                 </Link>
               </Button>
 
-              {/* Secondary: very light emerald “outline” look */}
+              {/* Secondary: light emerald outline */}
               <Button
                 asChild
                 size="lg"
                 variant="outline"
-                className="rounded-full px-7 h-12
+                className="h-12 rounded-full px-7
                            border-emerald-300 text-emerald-700 hover:bg-emerald-50
-                           dark:border-emerald-400 dark:text-emerald-300 dark:hover:bg-emerald-900/20"
+                           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300/70"
               >
                 <Link href="/contact" aria-label="Talk to the team">
                   Talk to the Team
@@ -50,7 +51,7 @@ export default function Join() {
             </div>
 
             {/* Soft accent bar */}
-            <div className="mt-6 mx-auto h-1 w-24 rounded-full bg-emerald-300/30 dark:bg-emerald-400/25" />
+            <div className="mt-6 mx-auto h-1 w-24 rounded-full bg-emerald-300/30" />
           </div>
         </div>
       </div>
