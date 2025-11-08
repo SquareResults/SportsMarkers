@@ -3,14 +3,25 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import { useState } from "react";
+import { useSupabase } from "@/components/SupabaseProvider";
 
 import { Button } from "@/components/ui/button";
 import {
-  Form, FormControl, FormField, FormItem, FormLabel, FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowRight, Eraser } from "lucide-react";
@@ -21,26 +32,59 @@ const formSchema = z.object({
   phone: z.string().optional(),
   topic: z.string().min(1, { message: "Please choose a topic." }),
   sport: z.string().optional(),
-  message: z.string().min(10, { message: "Message must be at least 10 characters." }),
+  message: z
+    .string()
+    .min(10, { message: "Message must be at least 10 characters." }),
 });
 
 export default function ContactForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: { name: "", email: "", phone: "", topic: "", sport: "", message: "" },
+    defaultValues: {
+      name: "",
+      email: "",
+      phone: "",
+      topic: "",
+      sport: "",
+      message: "",
+    },
     mode: "onChange",
   });
 
   const { isSubmitting, isValid } = form.formState;
+  const supabase = useSupabase();
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    const { error } = await supabase
+      .from("contact_submissions")
+      .insert([values]);
+
+    if (error) {
+      console.error(error);
+      alert("There was an error submitting your form. Please try again.");
+    } else {
+      setIsSubmitted(true);
+    }
   }
 
   // Fixed-light field styles
   const fieldBase =
     "h-11 rounded-xl border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 " +
     "hover:border-slate-400 focus-visible:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-300/60";
+
+  if (isSubmitted) {
+    return (
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm md:p-8 dark:border-slate-800 dark:bg-slate-900">
+        <h2 className="text-2xl md:text-3xl font-bold text-emerald-600">
+          Thank you!
+        </h2>
+        <p className="mt-4 text-slate-600 dark:text-slate-300">
+          Your message has been sent successfully. We'll get back to you soon.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
@@ -56,7 +100,11 @@ export default function ContactForm() {
               <FormItem>
                 <FormLabel className="text-slate-700">Full Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="John Doe" className={fieldBase} {...field} />
+                  <Input
+                    placeholder="John Doe"
+                    className={`${fieldBase} ${fieldBaseDark} h-11`}
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -72,7 +120,12 @@ export default function ContactForm() {
                 <FormItem>
                   <FormLabel className="text-slate-700">Email</FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="you@example.com" className={fieldBase} {...field} />
+                    <Input
+                      type="email"
+                      placeholder="you@example.com"
+                      className={`${fieldBase} ${fieldBaseDark} h-11`}
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -85,7 +138,11 @@ export default function ContactForm() {
                 <FormItem>
                   <FormLabel className="text-slate-700">Phone (optional)</FormLabel>
                   <FormControl>
-                    <Input placeholder="(555) 000-1234" className={fieldBase} {...field} />
+                    <Input
+                      placeholder="(555) 000-1234"
+                      className={`${fieldBase} ${fieldBaseDark} h-11`}
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -100,10 +157,15 @@ export default function ContactForm() {
               name="topic"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-slate-700">Topic</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormLabel>Topic</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
-                      <SelectTrigger className={fieldBase}>
+                      <SelectTrigger
+                        className={`${fieldBase} ${fieldBaseDark} h-11`}
+                      >
                         <SelectValue placeholder="Select a topic" />
                       </SelectTrigger>
                     </FormControl>
@@ -123,10 +185,15 @@ export default function ContactForm() {
               name="sport"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-slate-700">Sport (optional)</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormLabel>Sport (optional)</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
-                      <SelectTrigger className={fieldBase}>
+                      <SelectTrigger
+                        className={`${fieldBase} ${fieldBaseDark} h-11`}
+                      >
                         <SelectValue placeholder="Choose sport" />
                       </SelectTrigger>
                     </FormControl>
@@ -153,7 +220,7 @@ export default function ContactForm() {
                 <FormControl>
                   <Textarea
                     placeholder="How can we help?"
-                    className="min-h-[140px] rounded-xl border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 hover:border-slate-400 focus-visible:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-300/60"
+                    className={`${fieldBase} ${fieldBaseDark} min-h-[140px]`}
                     {...field}
                   />
                 </FormControl>
@@ -192,8 +259,9 @@ export default function ContactForm() {
             </Button>
           </div>
 
-          <p className="mt-2 text-xs text-slate-500">
-            By submitting, you agree to our terms. We’ll only use your info to respond.
+          <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+            By submitting, you agree to our terms. We’ll only use your info to
+            respond.
           </p>
         </form>
       </Form>
