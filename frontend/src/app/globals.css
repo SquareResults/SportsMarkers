@@ -84,6 +84,7 @@
     --header-h: 64px;
 }
 
+/* Dark theme tokens */
 .dark {
     --background: oklch(0.2107 0.0087 264.3713);
     --foreground: oklch(0.9222 0.0044 247.8716);
@@ -166,6 +167,7 @@
     --tracking-normal: var(--tracking-normal);
 }
 
+/* Dark mapping */
 .dark {
     --color-background: var(--background);
     --color-foreground: var(--foreground);
@@ -217,12 +219,31 @@ body,
     height: 100%;
 }
 
+/* Header/hero overlap fix */
+:root { --header-h: 64px; }         /* matches h-16 on mobile */
+@media (min-width: 640px) {
+  :root { --header-h: 80px; }       /* matches sm:h-20 on desktop */
+}
+
 body {
     letter-spacing: var(--tracking-normal);
     background-color: var(--color-background);
     color: var(--color-foreground);
     overflow-x: hidden;
+    /* Push content below fixed header */
+    padding-top: var(--header-h);
 }
+
+/* If any hero used a negative offset, neutralize it */
+.offset-header { margin-top: 0 !important; }
+
+/* Make in-page anchors land below the fixed header */
+section[id], [id]:where(h1,h2,h3,h4,h5,h6) {
+  scroll-margin-top: calc(var(--header-h) + 12px);
+}
+
+/* Optional utility if you want class-based spacing instead of global padding */
+.pt-header { padding-top: var(--header-h) !important; }
 
 img,
 svg,
@@ -259,10 +280,6 @@ header.hero,
     text-align: center !important;
     width: 100%;
     min-height: min(92svh, 900px);
-}
-
-.offset-header {
-    margin-top: calc(-1 * var(--header-h));
 }
 
 .full-bleed {
@@ -347,7 +364,6 @@ header.hero,
 @layer components {
   /* Popper content wrapper -> actual panel */
   [data-radix-popper-content-wrapper] > div {
-    /* Explicit replacements for Tailwind @apply to avoid "Unknown at rule @apply" */
     background-color: rgb(255 255 255) !important; /* ensure opaque */
     border: 1px solid var(--color-border);
     box-shadow: var(--shadow-md);
@@ -356,9 +372,10 @@ header.hero,
     background-clip: padding-box;
     isolation: isolate;
   }
-  /* Dark mode background equivalent to Tailwind's dark:bg-slate-900 */
+
+  /* Dark-mode variant (keep if your site supports dark theme) */
   .dark [data-radix-popper-content-wrapper] > div {
-    background-color: rgb(15 23 42) !important; /* tailwind slate-900 fallback */
+    background-color: rgb(15 23 42) !important; /* slate-900 */
   }
 
   /* Solid Select triggers (the button you click) */
@@ -372,22 +389,21 @@ header.hero,
   /* dark-mode override for triggers */
   .dark button[role="combobox"],
   .dark .select-trigger {
-    background-color: rgb(15 23 42) !important; /* tailwind slate-900 fallback */
+    background-color: rgb(15 23 42) !important; /* slate-900 */
   }
 
   /* Solid hover for items inside panels */
   [data-radix-popper-content-wrapper] > div [role="option"],
   [data-radix-popper-content-wrapper] > div [role="menuitem"] {
-    /* Hover backgrounds are defined in the :hover rules below; avoid @apply in plain CSS */
     cursor: pointer;
   }
 
   [data-radix-popper-content-wrapper] > div [role="option"]:hover,
   [data-radix-popper-content-wrapper] > div [role="menuitem"]:hover {
-    background-color: rgb(241 245 249); /* tailwind slate-100 */
+    background-color: rgb(241 245 249); /* slate-100 */
   }
   .dark [data-radix-popper-content-wrapper] > div [role="option"]:hover,
   .dark [data-radix-popper-content-wrapper] > div [role="menuitem"]:hover {
-    background-color: rgb(30 41 59); /* tailwind slate-800 */
+    background-color: rgb(30 41 59); /* slate-800 */
   }
 }
