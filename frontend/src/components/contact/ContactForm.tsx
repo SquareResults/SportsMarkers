@@ -37,43 +37,42 @@ export default function ContactForm() {
     console.log(values);
   }
 
-  // Field styles (from previous step)
+  // Fixed-light field styles
   const fieldBase =
-    "rounded-xl border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 " +
+    "h-11 rounded-xl border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 " +
     "hover:border-slate-400 focus-visible:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-300/60";
-  const fieldBaseDark =
-    "dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 " +
-    "dark:hover:border-slate-500 dark:focus:border-emerald-500 dark:focus:ring-emerald-700/40";
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:p-8 dark:border-slate-800 dark:bg-slate-900">
-      <h2 className="text-2xl md:text-3xl font-bold">Send us a Message</h2>
+    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+      <h2 className="text-2xl md:text-3xl font-bold text-slate-900">Send us a Message</h2>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="mt-6 space-y-6">
+          {/* Name */}
           <FormField
             control={form.control}
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Full Name</FormLabel>
+                <FormLabel className="text-slate-700">Full Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="John Doe" className={`${fieldBase} ${fieldBaseDark} h-11`} {...field} />
+                  <Input placeholder="John Doe" className={fieldBase} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
+          {/* Email / Phone */}
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <FormField
               control={form.control}
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel className="text-slate-700">Email</FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="you@example.com" className={`${fieldBase} ${fieldBaseDark} h-11`} {...field} />
+                    <Input type="email" placeholder="you@example.com" className={fieldBase} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -84,9 +83,9 @@ export default function ContactForm() {
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Phone (optional)</FormLabel>
+                  <FormLabel className="text-slate-700">Phone (optional)</FormLabel>
                   <FormControl>
-                    <Input placeholder="(555) 000-1234" className={`${fieldBase} ${fieldBaseDark} h-11`} {...field} />
+                    <Input placeholder="(555) 000-1234" className={fieldBase} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -94,20 +93,21 @@ export default function ContactForm() {
             />
           </div>
 
+          {/* Topic / Sport */}
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <FormField
               control={form.control}
               name="topic"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Topic</FormLabel>
+                  <FormLabel className="text-slate-700">Topic</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <SelectTrigger className={`${fieldBase} ${fieldBaseDark} h-11`}>
+                      <SelectTrigger className={fieldBase}>
                         <SelectValue placeholder="Select a topic" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
+                    <SelectContent className="bg-white border border-slate-200 shadow-md">
                       <SelectItem value="portfolio">Portfolio Help</SelectItem>
                       <SelectItem value="events">Events</SelectItem>
                       <SelectItem value="partnerships">Partnerships</SelectItem>
@@ -123,14 +123,14 @@ export default function ContactForm() {
               name="sport"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Sport (optional)</FormLabel>
+                  <FormLabel className="text-slate-700">Sport (optional)</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <SelectTrigger className={`${fieldBase} ${fieldBaseDark} h-11`}>
+                      <SelectTrigger className={fieldBase}>
                         <SelectValue placeholder="Choose sport" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
+                    <SelectContent className="bg-white border border-slate-200 shadow-md">
                       <SelectItem value="basketball">Basketball</SelectItem>
                       <SelectItem value="soccer">Soccer</SelectItem>
                       <SelectItem value="track">Track &amp; Field</SelectItem>
@@ -143,14 +143,19 @@ export default function ContactForm() {
             />
           </div>
 
+          {/* Message */}
           <FormField
             control={form.control}
             name="message"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Message</FormLabel>
+                <FormLabel className="text-slate-700">Message</FormLabel>
                 <FormControl>
-                  <Textarea placeholder="How can we help?" className={`${fieldBase} ${fieldBaseDark} min-h-[140px]`} {...field} />
+                  <Textarea
+                    placeholder="How can we help?"
+                    className="min-h-[140px] rounded-xl border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 hover:border-slate-400 focus-visible:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-300/60"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -159,7 +164,7 @@ export default function ContactForm() {
 
           {/* Buttons */}
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            {/* Primary: gradient pill + states */}
+            {/* Primary: gradient pill */}
             <Button
               type="submit"
               disabled={isSubmitting || !isValid}
@@ -174,21 +179,20 @@ export default function ContactForm() {
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
 
-            {/* Secondary: clear/ghost pill */}
+            {/* Secondary: light ghost pill (no dark variants) */}
             <Button
               type="button"
               variant="ghost"
               onClick={() => form.reset()}
               className="h-12 w-full sm:w-auto rounded-full px-6 font-medium
-                         text-slate-700 hover:bg-slate-100
-                         dark:text-slate-200 dark:hover:bg-slate-800"
+                         text-slate-700 hover:bg-slate-100"
             >
               <Eraser className="mr-2 h-4 w-4" />
               Clear
             </Button>
           </div>
 
-          <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+          <p className="mt-2 text-xs text-slate-500">
             By submitting, you agree to our terms. We’ll only use your info to respond.
           </p>
         </form>

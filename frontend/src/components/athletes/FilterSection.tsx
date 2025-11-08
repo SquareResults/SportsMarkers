@@ -49,7 +49,7 @@ export default function FilterSection({
     if (e.key === "Enter") handleSearch();
   };
 
-  // Shared pill styles
+  // Pills
   const pill = "h-12 rounded-full";
   const pillInput = `${pill} px-5`;
   const pillSelect = `${pill} px-5 text-base`;
@@ -57,8 +57,8 @@ export default function FilterSection({
   return (
     <section className="py-6">
       <div className="container mx-auto px-4">
-        {/* Card: removed outer border; use subtle shadow + translucent bg */}
-        <div className="rounded-2xl bg-white/80 shadow-sm backdrop-blur-sm dark:bg-slate-900/70">
+        {/* Card: solid light style */}
+        <div className="rounded-2xl bg-white shadow-sm">
           <div className="flex flex-col gap-4 p-4 sm:p-5">
             {/* Controls */}
             <div className="grid grid-cols-1 items-center gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-[1.3fr_1fr_1fr_1fr_1fr_auto_auto]">
@@ -76,7 +76,7 @@ export default function FilterSection({
                 <SelectTrigger className={pillSelect}>
                   <SelectValue placeholder="All Sports" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border border-slate-200 shadow-md">
                   <SelectItem value="all">All Sports</SelectItem>
                   <SelectItem value="Basketball">Basketball</SelectItem>
                   <SelectItem value="Football">Football</SelectItem>
@@ -89,7 +89,7 @@ export default function FilterSection({
                 <SelectTrigger className={pillSelect}>
                   <SelectValue placeholder="All Positions" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border border-slate-200 shadow-md">
                   <SelectItem value="all">All Positions</SelectItem>
                   <SelectItem value="Guard">Guard</SelectItem>
                   <SelectItem value="Forward">Forward</SelectItem>
@@ -103,7 +103,7 @@ export default function FilterSection({
                 <SelectTrigger className={pillSelect}>
                   <SelectValue placeholder="All Years" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border border-slate-200 shadow-md">
                   <SelectItem value="all">All Years</SelectItem>
                   <SelectItem value="2025">2025</SelectItem>
                   <SelectItem value="2024">2024</SelectItem>
@@ -116,7 +116,7 @@ export default function FilterSection({
                 <SelectTrigger className={pillSelect}>
                   <SelectValue placeholder="All Locations" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border border-slate-200 shadow-md">
                   <SelectItem value="all">All Locations</SelectItem>
                   <SelectItem value="Los Angeles, CA">Los Angeles, CA</SelectItem>
                   <SelectItem value="Tempe, AZ">Tempe, AZ</SelectItem>
@@ -138,11 +138,17 @@ export default function FilterSection({
               <Button
                 variant="ghost"
                 onClick={handleClear}
-                className="h-12 rounded-full px-6 text-slate-700 hover:bg-slate-100
-                           dark:text-slate-200 dark:hover:bg-slate-800"
+                className="h-12 rounded-full px-6 text-slate-700 hover:bg-slate-100"
               >
                 Clear
               </Button>
+            </div>
+
+            {/* Count (kept) */}
+            <div className="flex justify-end">
+              <span className="text-sm text-slate-500">
+                {totalCount} {totalCount === 1 ? "athlete" : "athletes"} found
+              </span>
             </div>
           </div>
         </div>

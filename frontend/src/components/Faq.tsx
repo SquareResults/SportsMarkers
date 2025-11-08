@@ -18,12 +18,11 @@ export default function Faq() {
     <Section>
       <div className="py-14 sm:py-18 lg:py-24">
         <div className="container mx-auto px-4">
-          {/* Removed the small 'FAQs' badge */}
-          <div className="text-center max-w-3xl mx-auto">
+          <div className="mx-auto max-w-3xl text-center">
             <h2 className="mt-2 text-4xl font-extrabold tracking-tight sm:text-5xl">
               Frequently Asked Questions
             </h2>
-            <p className="mt-3 text-slate-600 dark:text-slate-300">
+            <p className="mt-3 text-slate-600">
               Everything you need to know about getting your athlete portfolio live.
             </p>
           </div>
@@ -37,22 +36,24 @@ export default function Faq() {
               <AccordionItem
                 key={i}
                 value={`item-${i}`}
-                className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-colors dark:border-slate-800 dark:bg-slate-900"
+                className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-colors"
               >
-                {/* Removed the +/– icon, kept clean trigger */}
-                <AccordionTrigger className="px-5 py-4 text-left text-base font-semibold sm:text-lg hover:no-underline">
+                {/* Hide any default chevron/svg that AccordionTrigger might render */}
+                <AccordionTrigger
+                  className="px-5 py-4 text-left text-base font-semibold sm:text-lg hover:no-underline [&>svg]:hidden"
+                >
                   {faq.question}
                 </AccordionTrigger>
 
-                <AccordionContent className="px-5 pb-5 pt-0 text-slate-600 dark:text-slate-300">
+                <AccordionContent className="px-5 pb-5 pt-0 text-slate-600">
                   {faq.answer}
                 </AccordionContent>
               </AccordionItem>
             ))}
           </Accordion>
 
-          {/* Subtle divider glow */}
-          <div className="pointer-events-none mx-auto mt-12 h-10 max-w-4xl rounded-full bg-gradient-to-r from-transparent via-slate-200 to-transparent blur-2xl dark:via-slate-800" />
+          {/* Subtle divider glow (light only) */}
+          <div className="pointer-events-none mx-auto mt-12 h-10 max-w-4xl rounded-full bg-gradient-to-r from-transparent via-slate-200 to-transparent blur-2xl" />
         </div>
       </div>
     </Section>
