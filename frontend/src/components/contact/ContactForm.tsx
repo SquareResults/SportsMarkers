@@ -37,16 +37,38 @@ export default function ContactForm() {
   const supabase = useSupabase();
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const { error } = await supabase
+    const { error: supabaseError } = await supabase
       .from("contact_submissions")
       .insert([values]);
 
-    if (error) {
+    if (supabaseError) {
+      console.error(supabaseError);
+      toast.error("There was an error saving your message. Please try again.");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/send-contact-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(values),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast.success("Your message has been sent successfully!");
+        form.reset();
+      } else {
+        toast.error(
+          "There was an error sending your message. Please try again.",
+        );
+      }
+    } catch (error) {
       console.error(error);
-      toast.error("There was an error submitting your form. Please try again.");
-    } else {
-      toast.success("Your message has been sent successfully!");
-      form.reset();
+      toast.error("There was an error sending your message. Please try again.");
     }
   }
 
