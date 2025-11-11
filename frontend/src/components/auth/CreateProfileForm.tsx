@@ -164,110 +164,121 @@ export function CreateProfileForm({
   /* ---------- Submit ---------- */
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      toast.error("You must be logged in to create a portfolio.");
-      setLoading(false);
-      return;
-    }
-
-    const uploadFile = async (file: File, bucket: string) => {
-      const ext = file.name.split(".").pop();
-      const name = `${user.id}-${Date.now()}-${Math.random()
-        .toString(36)
-        .substr(2, 9)}.${ext}`;
-      const { data, error } = await supabase.storage
-        .from(bucket)
-        .upload(name, file);
-      if (error) {
-        console.error(error);
-        return null;
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("You must be logged in to create a portfolio.");
+        return;
       }
-      return data.path;
-    };
 
-    const uploadMultipleFiles = async (files: FileList, bucket: string) => {
-      const urls = [];
-      for (const file of Array.from(files)) {
-        const url = await uploadFile(file, bucket);
-        if (url) {
-          urls.push(url);
+      const uploadFileToS3 = async (file: File) => {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const res = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          return data.data[0].file_url;
+        } else {
+          throw new Error(data.error);
         }
+      };
+
+      const uploadMultipleFilesToS3 = async (files: FileList) => {
+        const urls = [];
+        for (const file of Array.from(files)) {
+          const url = await uploadFileToS3(file);
+          if (url) {
+            urls.push(url);
+          }
+        }
+        return urls.length > 0 ? urls : null;
+      };
+
+      const profilePictureUrl = values.profilePicture?.[0]
+        ? await uploadFileToS3(values.profilePicture[0])
+        : null;
+      const logoUrl = values.logoUpload?.[0]
+        ? await uploadFileToS3(values.logoUpload[0])
+        : null;
+      const actionPhotosUrls = values.actionPhotos
+        ? await uploadMultipleFilesToS3(values.actionPhotos)
+        : null;
+      const resumeUrl = values.resume?.[0]
+        ? await uploadFileToS3(values.resume[0])
+        : null;
+      const referencesUrl = values.references?.[0]
+        ? await uploadFileToS3(values.references[0])
+        : null;
+      const certificationsUrl = values.certifications?.[0]
+        ? await uploadFileToS3(values.certifications[0])
+        : null;
+      const moreMediaUrls = values.moreMedia
+        ? await uploadMultipleFilesToS3(values.moreMedia)
+        : null;
+
+      const portfolioData = {
+        user_id: user.id,
+        first_name: values.firstName,
+        middle_name: values.middleName || null,
+        last_name: values.lastName,
+        sport: values.sport,
+        profile_picture_url: profilePictureUrl,
+        bio: values.bio || null,
+        background: values.background || null,
+        experience: values.experience || null,
+        achievements: values.achievements || null,
+        timeline: values.timeline || null,
+        skills: values.skills || null,
+        video_links: values.videoLinks
+          ? values.videoLinks.split("\n").filter(Boolean)
+          : null,
+        action_photos_urls: actionPhotosUrls,
+        press: values.press || null,
+        media_links: values.mediaLinks
+          ? values.mediaLinks.split("\n").filter(Boolean)
+          : null,
+        goals: values.goals || null,
+        opportunities: values.opportunities || null,
+        endorsements: values.endorsements || null,
+        merch: values.merch || null,
+        contact_email: values.contactEmail,
+        phone: values.phone || null,
+        socials: values.socials
+          ? values.socials.split("\n").filter(Boolean)
+          : null,
+        has_logo: values.hasLogo === "Yes",
+        logo_url: logoUrl,
+        resume_url: resumeUrl,
+        references_url: referencesUrl,
+        certifications_url: certificationsUrl,
+        more_media_urls: moreMediaUrls,
+        comments: values.comments || null,
+      };
+
+      const { error } = await supabase
+        .from("portfolios")
+        .insert([portfolioData]);
+      if (error) {
+        toast.error("Error creating portfolio: " + error.message);
+      } else {
+        toast.success("Portfolio created successfully!");
+        router.push("/profile");
       }
-      return urls.length > 0 ? urls : null;
-    };
-
-    const profilePictureUrl = values.profilePicture?.[0]
-      ? await uploadFile(values.profilePicture[0], "avatars")
-      : null;
-    const logoUrl = values.logoUpload?.[0]
-      ? await uploadFile(values.logoUpload[0], "logos")
-      : null;
-    const actionPhotosUrls = values.actionPhotos
-      ? await uploadMultipleFiles(values.actionPhotos, "action-photos")
-      : null;
-    const resumeUrl = values.resume?.[0]
-      ? await uploadFile(values.resume[0], "resumes")
-      : null;
-    const referencesUrl = values.references?.[0]
-      ? await uploadFile(values.references[0], "references")
-      : null;
-    const certificationsUrl = values.certifications?.[0]
-      ? await uploadFile(values.certifications[0], "certifications")
-      : null;
-    const moreMediaUrls = values.moreMedia
-      ? await uploadMultipleFiles(values.moreMedia, "more-media")
-      : null;
-
-    const portfolioData = {
-      user_id: user.id,
-      first_name: values.firstName,
-      middle_name: values.middleName || null,
-      last_name: values.lastName,
-      sport: values.sport,
-      profile_picture_url: profilePictureUrl,
-      bio: values.bio || null,
-      background: values.background || null,
-      experience: values.experience || null,
-      achievements: values.achievements || null,
-      timeline: values.timeline || null,
-      skills: values.skills || null,
-      video_links: values.videoLinks
-        ? values.videoLinks.split("\n").filter(Boolean)
-        : null,
-      action_photos_urls: actionPhotosUrls,
-      press: values.press || null,
-      media_links: values.mediaLinks
-        ? values.mediaLinks.split("\n").filter(Boolean)
-        : null,
-      goals: values.goals || null,
-      opportunities: values.opportunities || null,
-      endorsements: values.endorsements || null,
-      merch: values.merch || null,
-      contact_email: values.contactEmail,
-      phone: values.phone || null,
-      socials: values.socials
-        ? values.socials.split("\n").filter(Boolean)
-        : null,
-      has_logo: values.hasLogo === "Yes",
-      logo_url: logoUrl,
-      resume_url: resumeUrl,
-      references_url: referencesUrl,
-      certifications_url: certificationsUrl,
-      more_media_urls: moreMediaUrls,
-      comments: values.comments || null,
-    };
-
-    const { error } = await supabase.from("portfolios").insert([portfolioData]);
-    if (error) {
-      toast.error("Error: " + error.message);
-    } else {
-      toast.success("Portfolio created!");
-      router.push("/profile");
+    } catch (error: any) {
+      console.error("An unexpected error occurred:", error);
+      toast.error(
+        error.message || "An unexpected error occurred. Please try again.",
+      );
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   const inputCls =

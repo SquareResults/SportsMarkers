@@ -1,39 +1,38 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AthletesGrid from "@/components/athletes/AthletesGrid";
 import AthletesHero from "@/components/athletes/AthletesHero";
 import FilterSection from "@/components/athletes/FilterSection";
-
-const allAthletes = [
-  {
-    name: "Alex Carter",
-    sport: "Basketball",
-    position: "Guard",
-    location: "Los Angeles, CA",
-    avatar: "/images/athlete-sample.jpg",
-    url: "#",
-  },
-  {
-    name: "Mark Burks",
-    sport: "Football",
-    position: "Quarterback",
-    location: "Tempe, AZ",
-    avatar: "/images/Mark.png",
-    url: "#",
-  },
-  {
-    name: "Sample",
-    sport: "Track & Field",
-    position: "Sprinter",
-    location: "Phoenix, AZ",
-    avatar: "/images/Sample.jpg",
-    url: "https://trial.theradarlist.com/",
-  },
-];
+import { useSupabase } from "@/components/SupabaseProvider";
 
 export default function AthletesPage() {
-  const [filteredAthletes, setFilteredAthletes] = useState(allAthletes);
+  const supabase = useSupabase();
+  const [allAthletes, setAllAthletes] = useState<any[]>([]);
+  const [filteredAthletes, setFilteredAthletes] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchPortfolios = async () => {
+      const { data: portfolios, error } = await supabase
+        .from("portfolios")
+        .select("*");
+      if (error) {
+        console.error("Error fetching portfolios:", error);
+      } else {
+        const athletes = portfolios.map((portfolio) => ({
+          name: `${portfolio.first_name} ${portfolio.last_name}`,
+          sport: portfolio.sport,
+          position: "N/A", // The portfolios table does not have a position column
+          location: "N/A", // The portfolios table does not have a location column
+          avatar: portfolio.profile_picture_url,
+          url: `/portfolio/${portfolio.id}`, // Assuming this is the URL structure
+        }));
+        setAllAthletes(athletes);
+        setFilteredAthletes(athletes);
+      }
+    };
+    fetchPortfolios();
+  }, [supabase]);
 
   const handleFilter = (filters: any) => {
     let athletes = allAthletes;
