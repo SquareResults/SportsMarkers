@@ -29,10 +29,10 @@ const MapPinSolid = (props: React.SVGProps<SVGSVGElement>) => (
 
 /** --- Color helper for icon badges --- */
 const badgeColors = {
-  blue:   "bg-blue-600 ring-blue-600/20",
-  emerald:"bg-emerald-600 ring-emerald-600/20",
+  blue: "bg-blue-600 ring-blue-600/20",
+  emerald: "bg-emerald-600 ring-emerald-600/20",
   purple: "bg-purple-600 ring-purple-600/20",
-  rose:   "bg-rose-600 ring-rose-600/20",
+  rose: "bg-rose-600 ring-rose-600/20",
 };
 
 function DetailItem({
@@ -68,13 +68,6 @@ export default function ContactDetails() {
       <h2 className="text-2xl md:text-3xl font-bold">Contact Details</h2>
 
       <div className="mt-6 space-y-5">
-        <DetailItem
-          title="Email"
-          value="contact@squareresults.com"
-          color="blue"
-          icon={<MailSolid className="h-5 w-5" />}
-        />
-
         <DetailItem
           title="Phone"
           value="(602) 418-6255"
