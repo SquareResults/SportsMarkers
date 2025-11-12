@@ -5,18 +5,25 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
 export async function POST(req: NextRequest) {
-  const cookieStore = cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         get(name: string) {
-          return cookieStore.get(name)?.value;
+          return req.cookies.get(name)?.value;
         },
       },
     },
   );
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   const formData = await req.formData();
   const file = formData.get("file") as File;
@@ -33,6 +40,7 @@ export async function POST(req: NextRequest) {
     Key: fileName,
     Body: Buffer.from(await file.arrayBuffer()),
     ContentType: file.type,
+    ACL: "public-read",
   });
 
   try {
@@ -41,7 +49,7 @@ export async function POST(req: NextRequest) {
 
     const { data, error } = await supabase
       .from("files")
-      .insert([{ file_url: fileUrl, name: file.name }])
+      .insert([{ file_url: fileUrl, name: file.name, user_id: user.id }])
       .select();
 
     if (error) {
