@@ -1012,8 +1012,8 @@ export default function EditProfileForm({
                               >
                                 <Upload className="mr-3 h-5 w-5 text-slate-500" />
                                 <span className="text-slate-700">
-                                  {(form.watch(f.name as keyof z.infer<typeof formSchema>) as FileList | undefined)?.length
-                                    ? `${(form.watch(f.name as keyof z.infer<typeof formSchema>) as unknown as FileList).length} file(s)`
+                                  {(form.watch(f.name as keyof z.infer<typeof formSchema>) as any | undefined)?.length
+                                    ? `${(form.watch(f.name as keyof z.infer<typeof formSchema>) as any).length} file(s)`
                                     : "Choose file(s)"}
                                 </span>
                               </label>

@@ -2,6 +2,7 @@
 'use client';
 
 import Link from 'next/link';
+import { Button } from "@/components/ui/button";
 
 export default function AboutHero() {
   return (
@@ -43,21 +44,22 @@ export default function AboutHero() {
         </h1>
 
         <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-          <Link
-            href="/create"
-            className="inline-flex items-center rounded-full px-6 py-3 text-base font-semibold text-white shadow-md
-                       bg-gradient-to-b from-[#32D071] to-[#20B85E] hover:opacity-95 transition"
+          <Button
+            asChild
+            size="lg"
+            className="rounded-full bg-gradient-to-b from-[#32D071] to-[#20B85E] text-base font-semibold text-white shadow-md hover:opacity-95"
           >
-            Create Your Portfolio →
-          </Link>
+            <Link href="/create">Create Your Portfolio →</Link>
+          </Button>
 
-          <Link
-            href="/athletes"
-            className="inline-flex items-center rounded-full px-6 py-3 text-base font-semibold text-white
-                       border border-white/70 bg-white/10 backdrop-blur-sm hover:bg-white/20 transition"
+          <Button
+            asChild
+            variant="outline"
+            size="lg"
+            className="rounded-full border-white/70 bg-white/10 text-base font-semibold text-white backdrop-blur-sm hover:bg-white/20 hover:text-white"
           >
-            Browse Athletes
-          </Link>
+            <Link href="/athletes">Browse Athletes</Link>
+          </Button>
         </div>
       </div>
     </section>

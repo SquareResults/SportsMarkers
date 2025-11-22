@@ -1,5 +1,7 @@
 import Image from "next/image";
 import Section from "@/components/Section";
+import { Button } from "@/components/ui/button";
+import { LayoutTemplate, FileText, Zap } from "lucide-react";
 
 export default function IntroSection() {
   return (
@@ -11,18 +13,18 @@ export default function IntroSection() {
               <h2 className="text-3xl font-bold sm:text-4xl">Where Talent Meets Opportunity.</h2>
 
               <div className="mt-4 flex flex-wrap gap-4">
-                <div className="flex items-center gap-2 bg-gray-100 px-3 py-1 rounded-full">
-                  <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M4 7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V7zm6 2h8v10H10V9zm-2 8H6v-2h2v2zm0-4H6v-2h2v2z"/></svg>
-                  <span>Clean, recruiter-ready layout</span>
-                </div>
-                <div className="flex items-center gap-2 bg-gray-100 px-3 py-1 rounded-full">
-                  <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2l3 7h7l-5.5 4.2L18 21l-6-4-6 4 1.5-7.8L2 9h7z"/></svg>
-                  <span>Story + stats together</span>
-                </div>
-                <div className="flex items-center gap-2 bg-gray-100 px-3 py-1 rounded-full">
-                  <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 1a11 11 0 100 22 11 11 0 000-22zm1 6v5.59l4 2.3-.9 1.54L11 13V7h2z"/></svg>
-                  <span>Built for speed</span>
-                </div>
+                <Button variant="secondary" size="sm" className="h-8 rounded-full pointer-events-none px-3">
+                  <LayoutTemplate className="mr-2 h-4 w-4" />
+                  Clean, recruiter-ready layout
+                </Button>
+                <Button variant="secondary" size="sm" className="h-8 rounded-full pointer-events-none px-3">
+                  <FileText className="mr-2 h-4 w-4" />
+                  Story + stats together
+                </Button>
+                <Button variant="secondary" size="sm" className="h-8 rounded-full pointer-events-none px-3">
+                  <Zap className="mr-2 h-4 w-4" />
+                  Built for speed
+                </Button>
               </div>
 
               {/* Justified paragraphs */}
