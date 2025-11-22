@@ -54,14 +54,15 @@ export function LoginForm({
     router.push("/athletes");
   };
 
+
   const primaryPill =
     "h-11 px-6 rounded-full font-semibold text-white shadow-lg " +
-    "bg-gradient-to-r from-emerald-400 to-green-600 " +
-    "hover:from-emerald-500 hover:to-green-700 transition";
+    "bg-primary hover:bg-primary/90 transition";
 
   const outlinePill =
-    "h-11 px-6 rounded-full font-semibold border-2 border-emerald-500 " +
-    "text-emerald-700 hover:bg-emerald-50 transition";
+    "h-11 px-6 rounded-full font-semibold border-2 border-primary " +
+    "text-primary hover:bg-primary/10 transition";
+
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -80,7 +81,7 @@ export function LoginForm({
               {/* defined input borders via group ring */}
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
-                <InputGroup className="rounded-xl ring-1 ring-slate-300 bg-white focus-within:ring-2 focus-within:ring-emerald-500">
+                <InputGroup className="rounded-xl ring-1 ring-slate-300 bg-white focus-within:ring-2 focus-within:ring-primary">
                   <InputGroupAddon className="rounded-l-xl border-r border-slate-200">
                     <Mail />
                   </InputGroupAddon>
@@ -107,7 +108,7 @@ export function LoginForm({
                     Forgot your password?
                   </a>
                 </div>
-                <InputGroup className="rounded-xl ring-1 ring-slate-300 bg-white focus-within:ring-2 focus-within:ring-emerald-500">
+                <InputGroup className="rounded-xl ring-1 ring-slate-300 bg-white focus-within:ring-2 focus-within:ring-primary">
                   <InputGroupAddon className="rounded-l-xl border-r border-slate-200">
                     <Lock />
                   </InputGroupAddon>

@@ -9,8 +9,8 @@ import { useSupabase } from "@/components/SupabaseProvider";
 type Athlete = {
   name: string;
   sport: string;
-  position: string;
-  location: string;
+  position?: string;
+  location?: string;
   avatar: string;
   url: string;
 };
@@ -31,10 +31,11 @@ export default function AthletesPage() {
         const athletes = portfolios.map((portfolio) => ({
           name: `${portfolio.first_name} ${portfolio.last_name}`,
           sport: portfolio.sport,
-          position: "N/A", // The portfolios table does not have a position column
-          location: "N/A", // The portfolios table does not have a location column
           avatar: portfolio.profile_picture_url,
-          url: `/portfolio/${portfolio.id}`, // Assuming this is the URL structure
+          url: `/portfolio/${portfolio.id}`,
+          bio: portfolio.bio,
+          skills: portfolio.skills,
+          education: portfolio.educational_background,
         }));
         setAllAthletes(athletes);
         setFilteredAthletes(athletes);
@@ -62,7 +63,7 @@ export default function AthletesPage() {
     if (filters.position && filters.position !== "all") {
       athletes = athletes.filter(
         (athlete) =>
-          athlete.position.toLowerCase() === (filters.position?.toLowerCase() || ""),
+          athlete.position?.toLowerCase() === (filters.position?.toLowerCase() || ""),
       );
     }
 
