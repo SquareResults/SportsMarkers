@@ -13,7 +13,7 @@ export default function Join() {
               Join the Movement
             </h2>
             <p className="mt-4 text-pretty text-lg leading-relaxed text-slate-600">
-              Whether you're an athlete, coach, recruiter, or fan—SportsMarkers is
+              Whether you&apos;re an athlete, coach, recruiter, or fan—SportsMarkers is
               your home for discovery, connection, and growth. When talent meets
               opportunity, greatness follows.
             </p>

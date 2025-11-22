@@ -1,159 +1,223 @@
 "use client";
 
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import type { z } from "zod";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Form } from "@/components/ui/form";
 import { useSupabase } from "@/components/SupabaseProvider";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Upload } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { BasicInfoSection } from "./create-profile-form/BasicInfoSection";
+import { BioBackgroundSection } from "./create-profile-form/BioBackgroundSection";
+import { EducationalBackgroundSection } from "./create-profile-form/EducationalBackgroundSection";
+import { JourneySection } from "./create-profile-form/JourneySection";
+import { TimelineSection } from "./create-profile-form/TimelineSection";
+import { SkillsAndMediaSection } from "./create-profile-form/SkillsAndMediaSection";
+import { GoalsSection } from "./create-profile-form/GoalsSection";
+import { EndorsementsSection } from "./create-profile-form/EndorsementsSection";
+import { ContactSection } from "./create-profile-form/ContactSection";
+import { UploadsSection } from "./create-profile-form/UploadsSection";
+import { formSchema } from "@/lib/formSchema";
+import { UseFormReturn } from "react-hook-form";
 
-const ACCEPTED_IMAGE_TYPES = [
-  "image/jpeg",
-  "image/jpg",
-  "image/png",
-  "image/webp",
-];
+interface PortfolioData {
+  id?: string;
+  first_name?: string;
+  middle_name?: string;
+  last_name?: string;
+  sport?: string;
+  profile_picture_url?: string;
+  bio?: string;
+  background?: string;
+  educational_background?: Array<{ school: string; graduationYear?: string }>;
+  experience?: Array<{ team: string; position?: string; explanation?: string }>;
+  achievements?: Array<{ tournament: string; medalsAwards?: string; ranking?: string }>;
+  timeline?: {
+    teams?: Array<{ name: string; startDate?: string; endDate?: string }>;
+    tournaments?: Array<{ name: string; startDate?: string; endDate?: string }>;
+  };
+  skills?: string[];
+  video_links?: Array<{ title?: string; url?: string }>;
+  action_photos_urls?: string[];
+  press?: Array<{ title?: string; url?: string }>;
+  media_links?: Array<{ title?: string; url?: string }>;
+  goals?: string;
+  opportunities?: "Yes" | "No" | "Maybe";
+  endorsements?: string;
+  merch?: string;
+  contact_email?: string;
+  phone?: string;
+  socials?: {
+    instagram?: string;
+    twitter?: string;
+    tiktok?: string;
+    youtube?: string;
+    linkedin?: string;
+    other?: string;
+  };
+  has_logo?: boolean;
+  logo_url?: string;
+  resume_url?: string;
+  references_url?: string;
+  certifications_url?: string;
+  more_media_urls?: string[];
+  comments?: string;
+}
 
-/* ---------- Zod Schema ---------- */
-const formSchema = z.object({
-  // 1 – Basic Info
-  firstName: z.string().min(1, "First name is required"),
-  middleName: z.string().optional(),
-  lastName: z.string().min(1, "Last name is required"),
-  sport: z.string().min(1, "Sport is required"),
-  profilePicture: z.any().optional(), // FileList
+function getValueOrDefault<T>(value: T | undefined | null | ""): T | undefined {
+  if (value === "" || value === null) {
+    return undefined;
+  }
+  return value as T | undefined;
+}
 
-  // 2 – Bio & Background
-  bio: z.string().optional(),
-  background: z.string().optional(),
+// Helper function to safely get a string value or undefined
+function getOptionalStringValue(value: string | null | undefined): string | undefined {
+  return value === null || value === undefined || (typeof value === 'string' && value.trim() === "") ? undefined : value;
+}
 
-  // 3 – Educational Background
-  educationalBackground: z
-    .array(
-      z.object({
-        school: z.string().min(1, "School / college name is required"),
-        graduationYear: z.string().optional(),
-      }),
-    )
-    .optional(),
+// Helper function to safely get a required string value (defaults to empty string)
+function getRequiredStringValue(value: string | null | undefined): string {
+  return value === null || value === undefined ? "" : value;
+}
 
-  // 4 – Journey
-  journeyTeams: z
-    .array(
-      z.object({
-        team: z.string().min(1, "Team name is required"),
-        position: z.string().optional(),
-        explanation: z.string().optional(),
-      }),
-    )
-    .optional(),
-  journeyAchievements: z
-    .array(
-      z.object({
-        tournament: z
-          .string()
-          .min(1, "Tournament / competition name is required"),
-        medalsAwards: z.string().optional(),
-        ranking: z.string().optional(),
-      }),
-    )
-    .optional(),
 
-  // 5 – Timeline (combined date fields)
-  timelineTeams: z
-    .array(
-      z.object({
-        name: z.string().min(1, "Team / position is required"),
-        startDate: z.string().optional(), // "MM/YYYY"
-        endDate: z.string().optional(),
-      }),
-    )
-    .optional(),
-  timelineTournaments: z
-    .array(
-      z.object({
-        name: z.string().min(1, "Tournament / competition is required"),
-        startDate: z.string().optional(),
-        endDate: z.string().optional(),
-      }),
-    )
-    .optional(),
+function transformPortfolioToFormData(portfolio: PortfolioData): z.infer<typeof formSchema> {
+  const defaultFormValues: z.infer<typeof formSchema> = {
+    firstName: "",
+    middleName: undefined,
+    lastName: "",
+    sport: "",
+    profilePicture: undefined,
+    bio: undefined,
+    background: undefined,
+    educationalBackground: undefined,
+    journeyTeams: undefined,
+    journeyAchievements: undefined,
+    timelineTeams: undefined,
+    timelineTournaments: undefined,
+    skills: undefined,
+    videoLinks: undefined,
+    actionPhotos: undefined,
+    press: undefined,
+    mediaLinks: undefined,
+    goals: undefined,
+    opportunities: "",
+    endorsements: undefined,
+    merch: undefined,
+    contactEmail: "",
+    phone: undefined,
+    socials: undefined,
+    hasLogo: "",
+    logoUpload: undefined,
+    resume: undefined,
+    references: undefined,
+    certifications: undefined,
+    moreMedia: undefined,
+    comments: undefined,
+  };
 
-  // 6 – Skills & Media
-  skills: z.string().optional(),
-  videoLinks: z.string().optional(),
-  actionPhotos: z.any().optional(),
-  press: z.string().optional(),
-  mediaLinks: z.string().optional(),
+  if (!portfolio) {
+    return defaultFormValues;
+  }
 
-  // 7 – Goals
-  goals: z.string().optional(),
-  opportunities: z.enum(["", "Yes", "No", "Maybe"]),
+  const timeline = portfolio.timeline || {};
 
-  // 8 – Endorsements & Merch
-  endorsements: z.string().optional(),
-  merch: z.string().optional(),
+  // Parse Experience (Journey Teams)
+  let journeyTeams: Array<{ team: string; position?: string; explanation?: string }> | undefined = undefined;
+  if (Array.isArray(portfolio.experience)) {
+    journeyTeams = portfolio.experience;
+  } else if (portfolio.experience && typeof portfolio.experience === 'object') {
+    // It's an object/map from DB: { "Team Name (Position)": "Explanation" }
+    journeyTeams = Object.entries(portfolio.experience).map(([key, value]) => {
+      // Try to extract position from "Team Name (Position)"
+      const match = key.match(/^(.*?)\s*\((.*?)\)$/);
+      if (match) {
+        return {
+          team: match[1].trim(),
+          position: match[2].trim(),
+          explanation: value as string,
+        };
+      }
+      return {
+        team: key.trim(),
+        position: "",
+        explanation: value as string,
+      };
+    });
+  }
 
-  // 9 – Contact & Logo
-  contactEmail: z.string().email("Invalid email address"),
-  phone: z.string().optional(),
-  socials: z
-    .object({
-      instagram: z.string().optional(),
-      twitter: z.string().optional(),
-      tiktok: z.string().optional(),
-      youtube: z.string().optional(),
-      linkedin: z.string().optional(),
-      other: z.string().optional(),
-    })
-    .optional(),
-  hasLogo: z.enum(["", "Yes", "No"]),
+  // Parse Achievements
+  let journeyAchievements: Array<{ tournament: string; medalsAwards?: string; ranking?: string }> | undefined = undefined;
+  if (Array.isArray(portfolio.achievements)) {
+    journeyAchievements = portfolio.achievements;
+  } else if (portfolio.achievements && typeof portfolio.achievements === 'object') {
+    // It's an object/map from DB: { "Tournament": ["Medal", "Ranking"] }
+    journeyAchievements = Object.entries(portfolio.achievements).map(([key, value]) => {
+      const details = Array.isArray(value) ? value : [];
+      return {
+        tournament: key.trim(),
+        medalsAwards: details[0] || "",
+        ranking: details[1] || "",
+      };
+    });
+  }
 
-  logoUpload: z.any().optional(),
+  return {
+    ...defaultFormValues, // Start with defaults
+    firstName: getRequiredStringValue(portfolio.first_name),
+    middleName: getOptionalStringValue(portfolio.middle_name),
+    lastName: getRequiredStringValue(portfolio.last_name),
+    sport: getRequiredStringValue(portfolio.sport),
+    profilePicture: undefined,
+    bio: getOptionalStringValue(portfolio.bio),
+    background: getOptionalStringValue(portfolio.background),
 
-  // 10 – Uploads
-  resume: z.any().optional(),
-  references: z.any().optional(),
-  certifications: z.any().optional(),
-  moreMedia: z.any().optional(),
-  comments: z.string().optional(),
-});
+    educationalBackground: portfolio.educational_background?.length ? portfolio.educational_background : undefined,
+
+    journeyTeams: journeyTeams,
+    journeyAchievements: journeyAchievements,
+
+    timelineTeams: timeline.teams?.length ? timeline.teams : undefined,
+    timelineTournaments: timeline.tournaments?.length ? timeline.tournaments : undefined,
+
+    skills: getOptionalStringValue(portfolio.skills?.join(", ")),
+    videoLinks: portfolio.video_links?.length ? (portfolio.video_links as Array<{ title: string; url: string }>) : undefined,
+    press: portfolio.press?.length ? (portfolio.press as Array<{ title: string; url: string }>) : undefined,
+    mediaLinks: portfolio.media_links?.length ? (portfolio.media_links as Array<{ title: string; url: string }>) : undefined,
+
+    goals: getOptionalStringValue(portfolio.goals),
+    opportunities: portfolio.opportunities || "",
+
+    endorsements: getOptionalStringValue(portfolio.endorsements),
+    merch: getOptionalStringValue(portfolio.merch),
+
+    contactEmail: getRequiredStringValue(portfolio.contact_email),
+    phone: getOptionalStringValue(portfolio.phone),
+    socials: portfolio.socials || undefined,
+    hasLogo: portfolio.has_logo === true ? "Yes" : (portfolio.has_logo === false ? "No" : ""),
+    logoUpload: undefined,
+    resume: undefined,
+    references: undefined,
+    certifications: undefined,
+    moreMedia: undefined,
+    comments: getOptionalStringValue(portfolio.comments),
+  };
+}
 
 /* ---------- Component ---------- */
+interface CreateProfileFormProps extends React.ComponentProps<"div"> {
+  portfolio?: PortfolioData;
+}
+
 export function CreateProfileForm({
   className,
+  portfolio,
   ...props
-}: React.ComponentProps<"div">) {
+}: CreateProfileFormProps) {
   const supabase = useSupabase();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -171,10 +235,13 @@ export function CreateProfileForm({
     { title: string; url: string }[]
   >([{ title: "", url: "" }]);
 
+  // Determine if in edit mode
+  const isEditMode = !!portfolio;
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     mode: "onBlur",
-    defaultValues: {
+    defaultValues: portfolio ? transformPortfolioToFormData(portfolio) : {
       firstName: "",
       middleName: "",
       lastName: "",
@@ -192,9 +259,9 @@ export function CreateProfileForm({
       timelineTournaments: [{ name: "", startDate: "", endDate: "" }],
 
       skills: "",
-      videoLinks: "",
-      press: "",
-      mediaLinks: "",
+      videoLinks: [],
+      press: [],
+      mediaLinks: [],
       goals: "",
       opportunities: "",
       endorsements: "",
@@ -214,53 +281,6 @@ export function CreateProfileForm({
     },
   });
 
-  // Field arrays
-  const {
-    fields: eduFields,
-    append: addSchool,
-    remove: removeSchool,
-  } = useFieldArray({
-    control: form.control,
-    name: "educationalBackground",
-  });
-
-  const {
-    fields: journeyTeamFields,
-    append: addJourneyTeam,
-    remove: removeJourneyTeam,
-  } = useFieldArray({
-    control: form.control,
-    name: "journeyTeams",
-  });
-
-  const {
-    fields: journeyAchievementFields,
-    append: addJourneyAchievement,
-    remove: removeJourneyAchievement,
-  } = useFieldArray({
-    control: form.control,
-    name: "journeyAchievements",
-  });
-
-  const {
-    fields: timelineTeamFields,
-    append: addTimelineTeam,
-    remove: removeTimelineTeam,
-  } = useFieldArray({
-    control: form.control,
-    name: "timelineTeams",
-  });
-
-  const {
-    fields: timelineTournamentFields,
-    append: addTimelineTournament,
-    remove: removeTimelineTournament,
-  } = useFieldArray({
-    control: form.control,
-    name: "timelineTournaments",
-  });
-
-  /* ---------- Tabs definition ---------- */
   const tabs = [
     { value: "section1", label: "Basic Info" },
     { value: "section2", label: "Bio & Background" },
@@ -274,6 +294,20 @@ export function CreateProfileForm({
     { value: "section10", label: "Uploads" },
   ];
 
+  /* ---------- Field Mapping for Validation ---------- */
+  const tabFieldMap: Record<string, (keyof z.infer<typeof formSchema>)[]> = {
+    section1: ["firstName", "lastName", "sport"],
+    section2: [], // Bio is optional
+    section3: [], // Educational background is optional but if filled, school is required
+    section4: [], // Journey is optional but if filled, team/tournament are required
+    section5: [], // Timeline is optional but if filled, name is required
+    section6: [], // Skills & Media are optional
+    section7: [], // Goals are optional
+    section8: [], // Endorsements are optional
+    section9: ["contactEmail"], // Contact email is required
+    section10: [], // Uploads are optional
+  };
+
   /* ---------- Navigation Helpers ---------- */
   const goToTab = (tab: string) => {
     setActiveTab(tab);
@@ -282,7 +316,27 @@ export function CreateProfileForm({
     }
   };
 
-  const nextTab = () => {
+  const validateCurrentTab = async () => {
+    const fieldsToValidate = tabFieldMap[activeTab] || [];
+
+    if (fieldsToValidate.length === 0) {
+      return true; // No required fields for this tab
+    }
+
+    // Trigger validation for the specified fields
+    const result = await form.trigger(fieldsToValidate);
+    return result;
+  };
+
+  const nextTab = async () => {
+    // Validate current tab before proceeding
+    const isValid = await validateCurrentTab();
+
+    if (!isValid) {
+      toast.error("Please fill in all required fields before proceeding");
+      return;
+    }
+
     const idx = tabs.findIndex((t) => t.value === activeTab);
     if (idx < tabs.length - 1) goToTab(tabs[idx + 1].value);
   };
@@ -406,30 +460,29 @@ export function CreateProfileForm({
       const journeyTeamsDict =
         values.journeyTeams && values.journeyTeams.length
           ? Object.fromEntries(
-              values.journeyTeams
-                .filter((jt) => jt.team.trim())
-                .map((jt) => [
-                  `${jt.team.trim()}${
-                    jt.position ? ` (${jt.position.trim()})` : ""
-                  }`,
-                  jt.explanation?.trim() || "",
-                ]),
-            )
+            values.journeyTeams
+              .filter((jt) => jt.team.trim())
+              .map((jt) => [
+                `${jt.team.trim()}${jt.position ? ` (${jt.position.trim()})` : ""
+                }`,
+                jt.explanation?.trim() || "",
+              ]),
+          )
           : null;
 
       const achievementsDict =
         values.journeyAchievements && values.journeyAchievements.length
           ? Object.fromEntries(
-              values.journeyAchievements
-                .filter((ja) => ja.tournament.trim())
-                .map((ja) => [
-                  ja.tournament.trim(),
-                  [
-                    ja.medalsAwards?.trim() || "",
-                    ja.ranking?.trim() || "",
-                  ],
-                ]),
-            )
+            values.journeyAchievements
+              .filter((ja) => ja.tournament.trim())
+              .map((ja) => [
+                ja.tournament.trim(),
+                [
+                  ja.medalsAwards?.trim() || "",
+                  ja.ranking?.trim() || "",
+                ],
+              ]),
+          )
           : null;
 
       // Timeline → DB shape { name: [startMonth, startYear, endMonth, endYear] }
@@ -536,67 +589,40 @@ export function CreateProfileForm({
         comments: values.comments || null,
       };
 
-      const { error } = await supabase
-        .from("portfolios")
-        .insert([portfolioData]);
-      if (error) {
-        toast.error("Error creating portfolio: " + error.message);
+      // Use update if editing existing portfolio, insert if creating new
+      if (isEditMode && portfolio?.id) {
+        const { error } = await supabase
+          .from("portfolios")
+          .update(portfolioData)
+          .eq("id", portfolio.id);
+
+        if (error) {
+          toast.error("Error updating portfolio: " + error.message);
+        } else {
+          toast.success("Portfolio updated successfully!");
+          router.push("/profile");
+        }
       } else {
-        toast.success("Portfolio created successfully!");
-        router.push("/profile");
+        const { error } = await supabase
+          .from("portfolios")
+          .insert([portfolioData]);
+
+        if (error) {
+          toast.error("Error creating portfolio: " + error.message);
+        } else {
+          toast.success("Portfolio created successfully!");
+          router.push("/profile");
+        }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("An unexpected error occurred:", error);
       toast.error(
-        error.message || "An unexpected error occurred. Please try again.",
+        (error as Error).message || "An unexpected error occurred. Please try again.",
       );
     } finally {
       setLoading(false);
     }
   }
-
-  /* ---------- Styles ---------- */
-  const inputCls =
-    "h-12 rounded-xl border border-slate-200 bg-white placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-emerald-500/40 focus-visible:border-emerald-500";
-  const textareaCls =
-    "min-h-[140px] rounded-xl border border-slate-200 bg-white placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-emerald-500/40 focus-visible:border-emerald-500";
-  const pillActive =
-    "h-11 px-8 rounded-full font-semibold text-white shadow-lg " +
-    "bg-gradient-to-r from-emerald-400 to-green-600 " +
-    "hover:from-emerald-500 hover:to-green-700 transition";
-  const pillOutline =
-    "h-11 px-6 rounded-full font-semibold border border-slate-300 " +
-    "text-slate-700 hover:bg-slate-50 transition";
-
-  /* ---------- Helpers for dynamic lists ---------- */
-  const addSkillField = () => setSkillsList((prev) => [...prev, ""]);
-  const updateSkillField = (index: number, value: string) =>
-    setSkillsList((prev) => prev.map((s, i) => (i === index ? value : s)));
-
-  const addMediaItem = (
-    kind: "video" | "press" | "other",
-    item: { title: string; url: string },
-  ) => {
-    if (kind === "video") setVideoItems((prev) => [...prev, item]);
-    if (kind === "press") setPressItems((prev) => [...prev, item]);
-    if (kind === "other") setOtherMediaItems((prev) => [...prev, item]);
-  };
-
-  const updateMediaItem = (
-    kind: "video" | "press" | "other",
-    index: number,
-    field: "title" | "url",
-    value: string,
-  ) => {
-    const update = (arr: { title: string; url: string }[]) =>
-      arr.map((item, i) =>
-        i === index ? { ...item, [field]: value } : item,
-      );
-
-    if (kind === "video") setVideoItems((prev) => update(prev));
-    if (kind === "press") setPressItems((prev) => update(prev));
-    if (kind === "other") setOtherMediaItems((prev) => update(prev));
-  };
 
   return (
     <div
@@ -605,7 +631,7 @@ export function CreateProfileForm({
     >
       <div className="mb-10 text-center">
         <h1 className="text-4xl font-extrabold tracking-tight text-slate-900">
-          Create Your Athlete Portfolio
+          {isEditMode ? "Edit Your Athlete Portfolio" : "Create Your Athlete Portfolio"}
         </h1>
         <p className="mt-2 text-lg text-slate-600">
           Showcase your athletic journey and achievements. Fields marked with * are
@@ -637,1718 +663,44 @@ export function CreateProfileForm({
               </div>
             </div>
 
-            {/* ---------- SECTION 1: BASIC INFO ---------- */}
             <TabsContent value="section1">
-              <Card className="border-2 border-slate-200 shadow-xl">
-                <CardHeader>
-                  <CardTitle>Section 1 of 10: Basic Info</CardTitle>
-                  <CardDescription>
-                    Tell us who you are. * fields are required; others are{" "}
-                    <span className="font-semibold">(optional)</span>.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <FormField
-                    control={form.control}
-                    name="firstName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>First Name *</FormLabel>
-                        <FormControl>
-                          <Input
-                            className={inputCls}
-                            placeholder="First name"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="middleName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Middle Name (optional)</FormLabel>
-                        <FormControl>
-                          <Input
-                            className={inputCls}
-                            placeholder="Middle name (if any)"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="lastName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Last Name *</FormLabel>
-                        <FormControl>
-                          <Input
-                            className={inputCls}
-                            placeholder="Last name"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="sport"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
-                          Sport You Play *{" "}
-                          <span className="text-slate-500">
-                            (e.g., Basketball, Soccer)
-                          </span>
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            className={inputCls}
-                            placeholder="Enter your primary sport"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="profilePicture"
-                    render={({ field: { onChange, value, ...field } }) => (
-                      <FormItem>
-                        <FormLabel>
-                          Profile Picture (optional){" "}
-                          <span className="text-slate-500">
-                            – PNG / JPG / WEBP, clear headshot
-                          </span>
-                        </FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Input
-                              type="file"
-                              accept={ACCEPTED_IMAGE_TYPES.join(",")}
-                              onChange={(e) => onChange(e.target.files)}
-                              className="hidden"
-                              id="profilePic"
-                              {...field}
-                            />
-                            <label
-                              htmlFor="profilePic"
-                              className="flex h-12 cursor-pointer items-center rounded-xl border border-slate-200 bg-white px-4"
-                            >
-                              <Upload className="mr-3 h-5 w-5 text-slate-500" />
-                              <span className="text-slate-700">
-                                {value?.[0]?.name || "Choose image"}
-                              </span>
-                            </label>
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </CardContent>
-                <CardFooter className="flex justify-end">
-                  <Button
-                    type="button"
-                    onClick={nextTab}
-                    className={pillActive}
-                  >
-                    Next
-                  </Button>
-                </CardFooter>
-              </Card>
+              <BasicInfoSection form={form as unknown as UseFormReturn<z.infer<typeof formSchema>>} nextTab={nextTab} />
             </TabsContent>
 
-            {/* ---------- SECTION 2: BIO & BACKGROUND ---------- */}
             <TabsContent value="section2">
-              <Card className="border-2 border-slate-200 shadow-xl">
-                <CardHeader>
-                  <CardTitle>Section 2 of 10: Bio & Background</CardTitle>
-                  <CardDescription>
-                    Use your <strong>Bio</strong> for a short intro and{" "}
-                    <strong>Background</strong> for more context and story. Both
-                    are optional.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <FormField
-                    control={form.control}
-                    name="bio"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
-                          Short Bio (optional){" "}
-                          <span className="text-slate-500">
-                            – Who are you as an athlete?
-                          </span>
-                        </FormLabel>
-                        <p className="text-xs text-slate-500 mb-1">
-                          Example: “I’m a 17-year-old point guard who loves
-                          high-pressure moments and leading my team on and off
-                          the court.”
-                        </p>
-                        <FormControl>
-                          <Textarea
-                            className={textareaCls}
-                            placeholder="Write 2–3 sentences that introduce you and your style."
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="background"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
-                          Background (optional){" "}
-                          <span className="text-slate-500">
-                            – Your story & context
-                          </span>
-                        </FormLabel>
-                        <p className="text-xs text-slate-500 mb-1">
-                          Use this to explain your journey (where you grew up,
-                          when you started playing, key influences, etc.).
-                        </p>
-                        <FormControl>
-                          <Textarea
-                            className={textareaCls}
-                            placeholder="Share more of your story and how you got here."
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </CardContent>
-                <CardFooter className="flex justify-between">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={prevTab}
-                    className={pillOutline}
-                  >
-                    Back
-                  </Button>
-                  <Button onClick={nextTab} className={pillActive}>
-                    Next
-                  </Button>
-                </CardFooter>
-              </Card>
+              <BioBackgroundSection form={form as unknown as UseFormReturn<z.infer<typeof formSchema>>} nextTab={nextTab} prevTab={prevTab} />
             </TabsContent>
 
-            {/* ---------- SECTION 3: EDUCATIONAL BACKGROUND ---------- */}
             <TabsContent value="section3">
-              <Card className="border-2 border-slate-200 shadow-xl">
-                <CardHeader>
-                  <CardTitle>Section 3 of 10: Educational Background</CardTitle>
-                  <CardDescription>
-                    Add each school or college you attended and your graduation
-                    year.
-                  </CardDescription>
-                </CardHeader>
-
-                <CardContent className="space-y-6">
-                  <div className="text-xs text-slate-500 space-y-1">
-                    <p className="font-semibold">How this works</p>
-                    <ul className="list-disc list-inside space-y-0.5">
-                      <li>Use one row per school or college.</li>
-                      <li>
-                        Graduation year can be left blank if you&apos;re still
-                        studying (you can write &quot;Present&quot; instead of a
-                        year).
-                      </li>
-                    </ul>
-                  </div>
-
-                  <div className="space-y-4">
-                    {eduFields.map((fieldItem, index) => (
-                      <div
-                        key={fieldItem.id}
-                        className="grid gap-3 md:grid-cols-[2fr,1fr,auto] items-end"
-                      >
-                        {/* School / College Name */}
-                        <FormField
-                          control={form.control}
-                          name={`educationalBackground.${index}.school`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm">
-                                School / College Name{" "}
-                                <span className="text-slate-500">
-                                  (required)
-                                </span>
-                              </FormLabel>
-                              <FormControl>
-                                <Input
-                                  className={inputCls}
-                                  placeholder="e.g., California State University, Northridge"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        {/* Graduation Year */}
-                        <FormField
-                          control={form.control}
-                          name={`educationalBackground.${index}.graduationYear`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm">
-                                Graduation Year{" "}
-                                <span className="text-slate-500">
-                                  (optional)
-                                </span>
-                              </FormLabel>
-                              <FormControl>
-                                <Input
-                                  className={inputCls}
-                                  placeholder="e.g., 2025 or Present"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        {/* Remove button */}
-                        <div className="flex justify-end md:justify-start">
-                          {eduFields.length > 1 && (
-                            <Button
-                              type="button"
-                              variant="outline"
-                              className="text-xs"
-                              onClick={() => removeSchool(index)}
-                            >
-                              Remove
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="mt-2"
-                    onClick={() =>
-                      addSchool({ school: "", graduationYear: "" })
-                    }
-                  >
-                    + Add Another School
-                  </Button>
-                </CardContent>
-
-                <CardFooter className="flex justify-between">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={prevTab}
-                    className={pillOutline}
-                  >
-                    Back
-                  </Button>
-                  <Button onClick={nextTab} className={pillActive}>
-                    Next
-                  </Button>
-                </CardFooter>
-              </Card>
+              <EducationalBackgroundSection form={form as unknown as UseFormReturn<z.infer<typeof formSchema>>} nextTab={nextTab} prevTab={prevTab} />
             </TabsContent>
 
-            {/* ---------- SECTION 4: JOURNEY (TEAMS & ACHIEVEMENTS) ---------- */}
             <TabsContent value="section4">
-              <Card className="border-2 border-slate-200 shadow-xl">
-                <CardHeader>
-                  <CardTitle>Section 4 of 10: Athletic Journey</CardTitle>
-                  <CardDescription>
-                    Describe your teams, positions, and key achievements in a
-                    structured way.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-8">
-                  {/* Teams & Positions */}
-                  <div className="space-y-3">
-                    <FormLabel>Teams and Positions (optional)</FormLabel>
-                    <p className="text-xs text-slate-500 mb-1">
-                      Example format:{" "}
-                      <span className="font-mono">
-                        Tigers (Goalie): starting varsity keeper
-                      </span>
-                      .
-                    </p>
-
-                    <div className="space-y-4">
-                      {journeyTeamFields.map((fieldItem, index) => (
-                        <div
-                          key={fieldItem.id}
-                          className="space-y-3 border border-slate-100 rounded-xl p-3"
-                        >
-                          <div className="grid gap-3 md:grid-cols-[1.3fr,1.1fr] items-end">
-                            <FormField
-                              control={form.control}
-                              name={`journeyTeams.${index}.team`}
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel className="text-sm">
-                                    Team Name{" "}
-                                    <span className="text-slate-500">
-                                      (required)
-                                    </span>
-                                  </FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      className={inputCls}
-                                      placeholder="e.g., Tigers"
-                                      {...field}
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-
-                            <FormField
-                              control={form.control}
-                              name={`journeyTeams.${index}.position`}
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel className="text-sm">
-                                    Position{" "}
-                                    <span className="text-slate-500">
-                                      (optional)
-                                    </span>
-                                  </FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      className={inputCls}
-                                      placeholder="e.g., Goalie"
-                                      {...field}
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-
-                          <FormField
-                            control={form.control}
-                            name={`journeyTeams.${index}.explanation`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-sm">
-                                  Explanation{" "}
-                                  <span className="text-slate-500">
-                                    (optional)
-                                  </span>
-                                </FormLabel>
-                                <FormControl>
-                                  <Textarea
-                                    className={textareaCls}
-                                    placeholder="Describe your role, impact, or key responsibilities on this team."
-                                    {...field}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          <div className="flex justify-end">
-                            {journeyTeamFields.length > 1 && (
-                              <Button
-                                type="button"
-                                variant="outline"
-                                className="text-xs"
-                                onClick={() => removeJourneyTeam(index)}
-                              >
-                                Remove
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="mt-2"
-                      onClick={() =>
-                        addJourneyTeam({
-                          team: "",
-                          position: "",
-                          explanation: "",
-                        })
-                      }
-                    >
-                      + Add Another Team
-                    </Button>
-                  </div>
-
-                  {/* Achievements & Stats */}
-                  <div className="space-y-3">
-                    <FormLabel>Achievements &amp; Stats (optional)</FormLabel>
-                    <p className="text-xs text-slate-500 mb-1">
-                      Example:{" "}
-                      <span className="font-mono">
-                        LA Winter Classic → Gold Medal, 1st out of 16 teams
-                      </span>
-                      .
-                    </p>
-
-                    <div className="space-y-4">
-                      {journeyAchievementFields.map((fieldItem, index) => (
-                        <div
-                          key={fieldItem.id}
-                          className="space-y-3 border border-slate-100 rounded-xl p-3"
-                        >
-                          <div className="grid gap-3 md:grid-cols-3 items-end">
-                            <FormField
-                              control={form.control}
-                              name={`journeyAchievements.${index}.tournament`}
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel className="text-sm">
-                                    Tournament / Competition{" "}
-                                    <span className="text-slate-500">
-                                      (required)
-                                    </span>
-                                  </FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      className={inputCls}
-                                      placeholder="e.g., LA Winter Classic"
-                                      {...field}
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-
-                            <FormField
-                              control={form.control}
-                              name={`journeyAchievements.${index}.medalsAwards`}
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel className="text-sm">
-                                    Medals &amp; Awards{" "}
-                                    <span className="text-slate-500">
-                                      (optional)
-                                    </span>
-                                  </FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      className={inputCls}
-                                      placeholder="e.g., Gold Medal"
-                                      {...field}
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-
-                            <FormField
-                              control={form.control}
-                              name={`journeyAchievements.${index}.ranking`}
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel className="text-sm">
-                                    Ranking{" "}
-                                    <span className="text-slate-500">
-                                      (optional)
-                                    </span>
-                                  </FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      className={inputCls}
-                                      placeholder="e.g., 1st out of 16 teams"
-                                      {...field}
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-
-                          <div className="flex justify-end">
-                            {journeyAchievementFields.length > 1 && (
-                              <Button
-                                type="button"
-                                variant="outline"
-                                className="text-xs"
-                                onClick={() =>
-                                  removeJourneyAchievement(index)
-                                }
-                              >
-                                Remove
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="mt-2"
-                      onClick={() =>
-                        addJourneyAchievement({
-                          tournament: "",
-                          medalsAwards: "",
-                          ranking: "",
-                        })
-                      }
-                    >
-                      + Add Another Achievement
-                    </Button>
-                  </div>
-                </CardContent>
-                <CardFooter className="flex justify-between">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={prevTab}
-                    className={pillOutline}
-                  >
-                    Back
-                  </Button>
-                  <Button onClick={nextTab} className={pillActive}>
-                    Next
-                  </Button>
-                </CardFooter>
-              </Card>
+              <JourneySection form={form as unknown as UseFormReturn<z.infer<typeof formSchema>>} nextTab={nextTab} prevTab={prevTab} />
             </TabsContent>
 
-            {/* ---------- SECTION 5: TIMELINE ---------- */}
             <TabsContent value="section5">
-              <Card className="border-2 border-slate-200 shadow-xl">
-                <CardHeader>
-                  <CardTitle>Section 5 of 10: Timeline</CardTitle>
-                  <CardDescription>
-                    Map your journey over time. Leave the{" "}
-                    <span className="font-semibold">End Date</span> empty if
-                    you&apos;re still playing or it was a single-month event.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-10">
-                  {/* Team (Position) Timeline */}
-                  <div className="space-y-4">
-                    <div className="space-y-1 text-xs text-slate-500">
-                      <FormLabel className="text-sm font-semibold">
-                        Team (Position) Timeline{" "}
-                        <span className="font-normal">(optional)</span>
-                      </FormLabel>
-                      <p>
-                        Use the same naming style as in the Journey section,
-                        like <span className="font-mono">Tigers (Goalie)</span>.
-                        Enter dates as <span className="font-mono">MM/YYYY</span>.
-                      </p>
-                      <ul className="list-disc list-inside space-y-0.5">
-                        <li>One card = one team / role.</li>
-                        <li>
-                          If you&apos;re still playing, just leave the End Date
-                          blank.
-                        </li>
-                      </ul>
-                    </div>
-
-                    <div className="space-y-4">
-                      {timelineTeamFields.map((fieldItem, index) => (
-                        <div
-                          key={fieldItem.id}
-                          className="space-y-3 rounded-xl border border-slate-100 bg-slate-50/40 p-3 md:p-4"
-                        >
-                          {/* Team (Position) name */}
-                          <FormField
-                            control={form.control}
-                            name={`timelineTeams.${index}.name`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-sm">
-                                  Team (Position){" "}
-                                  <span className="text-slate-500">
-                                    (required)
-                                  </span>
-                                </FormLabel>
-                                <FormControl>
-                                  <Input
-                                    className={inputCls}
-                                    placeholder="e.g., Tigers (Goalie)"
-                                    {...field}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          {/* Start / End dates */}
-                          <div className="grid gap-3 md:grid-cols-2">
-                            <FormField
-                              control={form.control}
-                              name={`timelineTeams.${index}.startDate`}
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel className="text-sm">
-                                    Start Date{" "}
-                                    <span className="text-slate-500">
-                                      (optional)
-                                    </span>
-                                  </FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      type="text"
-                                      inputMode="numeric"
-                                      placeholder="MM/YYYY"
-                                      maxLength={7}
-                                      className={inputCls}
-                                      {...field}
-                                    />
-                                  </FormControl>
-                                  <p className="mt-1 text-[11px] text-slate-500">
-                                    Choose the month &amp; year you joined.
-                                  </p>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-
-                            <FormField
-                              control={form.control}
-                              name={`timelineTeams.${index}.endDate`}
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel className="text-sm">
-                                    End Date{" "}
-                                    <span className="text-slate-500">
-                                      (optional)
-                                    </span>
-                                  </FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      type="text"
-                                      inputMode="numeric"
-                                      placeholder="MM/YYYY"
-                                      maxLength={7}
-                                      className={inputCls}
-                                      {...field}
-                                    />
-                                  </FormControl>
-                                  <p className="mt-1 text-[11px] text-slate-500">
-                                    Leave blank if you&apos;re still on this
-                                    team.
-                                  </p>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-
-                          {/* Remove button */}
-                          <div className="flex justify-end">
-                            {timelineTeamFields.length > 1 && (
-                              <Button
-                                type="button"
-                                variant="outline"
-                                className="text-xs"
-                                onClick={() => removeTimelineTeam(index)}
-                              >
-                                Remove
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="mt-1"
-                      onClick={() =>
-                        addTimelineTeam({
-                          name: "",
-                          startDate: "",
-                          endDate: "",
-                        })
-                      }
-                    >
-                      + Add Another Team Timeline
-                    </Button>
-                  </div>
-
-                  {/* Tournament / Competition Timeline */}
-                  <div className="space-y-4">
-                    <div className="space-y-1 text-xs text-slate-500">
-                      <FormLabel className="text-sm font-semibold">
-                        Tournament / Competition Timeline{" "}
-                        <span className="font-normal">(optional)</span>
-                      </FormLabel>
-                      <p>
-                        Great for leagues, showcase series, or longer
-                        tournaments where dates matter.
-                      </p>
-                      <ul className="list-disc list-inside space-y-0.5">
-                        <li>One card = one tournament / competition.</li>
-                        <li>
-                          For single-month events, you can set the same month in
-                          Start and End or leave End Date blank.
-                        </li>
-                      </ul>
-                    </div>
-
-                    <div className="space-y-4">
-                      {timelineTournamentFields.map((fieldItem, index) => (
-                        <div
-                          key={fieldItem.id}
-                          className="space-y-3 rounded-xl border border-slate-100 bg-slate-50/40 p-3 md:p-4"
-                        >
-                          {/* Tournament name */}
-                          <FormField
-                            control={form.control}
-                            name={`timelineTournaments.${index}.name`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-sm">
-                                  Tournament / Competition{" "}
-                                  <span className="text-slate-500">
-                                    (required)
-                                  </span>
-                                </FormLabel>
-                                <FormControl>
-                                  <Input
-                                    className={inputCls}
-                                    placeholder="e.g., LA Winter Classic"
-                                    {...field}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          {/* Start / End dates */}
-                          <div className="grid gap-3 md:grid-cols-2">
-                            <FormField
-                              control={form.control}
-                              name={`timelineTournaments.${index}.startDate`}
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel className="text-sm">
-                                    Start Date{" "}
-                                    <span className="text-slate-500">
-                                      (optional)
-                                    </span>
-                                  </FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      type="text"
-                                      inputMode="numeric"
-                                      placeholder="MM/YYYY"
-                                      maxLength={7}
-                                      className={inputCls}
-                                      {...field}
-                                    />
-                                  </FormControl>
-                                  <p className="mt-1 text-[11px] text-slate-500">
-                                    When did this tournament or league begin?
-                                  </p>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-
-                            <FormField
-                              control={form.control}
-                              name={`timelineTournaments.${index}.endDate`}
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel className="text-sm">
-                                    End Date{" "}
-                                    <span className="text-slate-500">
-                                      (optional)
-                                    </span>
-                                  </FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      type="text"
-                                      inputMode="numeric"
-                                      placeholder="MM/YYYY"
-                                      maxLength={7}
-                                      className={inputCls}
-                                      {...field}
-                                    />
-                                  </FormControl>
-                                  <p className="mt-1 text-[11px] text-slate-500">
-                                    Leave blank if it&apos;s ongoing or a
-                                    one-month event.
-                                  </p>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-
-                          {/* Remove button */}
-                          <div className="flex justify-end">
-                            {timelineTournamentFields.length > 1 && (
-                              <Button
-                                type="button"
-                                variant="outline"
-                                className="text-xs"
-                                onClick={() =>
-                                  removeTimelineTournament(index)
-                                }
-                              >
-                                Remove
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="mt-1"
-                      onClick={() =>
-                        addTimelineTournament({
-                          name: "",
-                          startDate: "",
-                          endDate: "",
-                        })
-                      }
-                    >
-                      + Add Another Tournament Timeline
-                    </Button>
-                  </div>
-                </CardContent>
-                <CardFooter className="flex justify-between">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={prevTab}
-                    className={pillOutline}
-                  >
-                    Back
-                  </Button>
-                  <Button onClick={nextTab} className={pillActive}>
-                    Next
-                  </Button>
-                </CardFooter>
-              </Card>
+              <TimelineSection form={form as unknown as UseFormReturn<z.infer<typeof formSchema>>} nextTab={nextTab} prevTab={prevTab} />
             </TabsContent>
 
-            {/* ---------- SECTION 6: SKILLS & MEDIA ---------- */}
             <TabsContent value="section6">
-              <Card className="border-2 border-slate-200 shadow-xl">
-                <CardHeader>
-                  <CardTitle>Section 6 of 10: Skills & Media</CardTitle>
-                  <CardDescription>
-                    Highlight your strengths, videos, press, and other media. All
-                    fields here are optional.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-8">
-                  {/* Key Skills – list of strings */}
-                  <div className="space-y-3">
-                    <FormLabel>Key Skills (optional)</FormLabel>
-                    <p className="text-xs text-slate-500 mb-1">
-                      Add one skill per field, like{" "}
-                      <span className="font-mono">speed</span>,{" "}
-                      <span className="font-mono">teamwork</span>,{" "}
-                      <span className="font-mono">on-court IQ</span>, etc.
-                    </p>
-                    <div className="space-y-2">
-                      {skillsList.map((skill, idx) => (
-                        <Input
-                          key={idx}
-                          className={inputCls}
-                          placeholder={`Skill #${idx + 1}`}
-                          value={skill}
-                          onChange={(e) =>
-                            updateSkillField(idx, e.target.value)
-                          }
-                        />
-                      ))}
-                    </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="mt-1"
-                      onClick={addSkillField}
-                    >
-                      + Add Skill
-                    </Button>
-                  </div>
-
-                  {/* Highlight Videos */}
-                  <div className="space-y-3">
-                    <FormLabel>Highlight Videos (optional)</FormLabel>
-                    <p className="text-xs text-slate-500 mb-1">
-                      For each highlight video, enter a title and a URL (YouTube
-                      or other).
-                    </p>
-                    <div className="space-y-3">
-                      {videoItems.map((item, idx) => (
-                        <div
-                          key={idx}
-                          className="grid gap-2 md:grid-cols-2 md:gap-4"
-                        >
-                          <Input
-                            className={inputCls}
-                            placeholder="Video title"
-                            value={item.title}
-                            onChange={(e) =>
-                              updateMediaItem(
-                                "video",
-                                idx,
-                                "title",
-                                e.target.value,
-                              )
-                            }
-                          />
-                          <Input
-                            className={inputCls}
-                            placeholder="Video URL"
-                            value={item.url}
-                            onChange={(e) =>
-                              updateMediaItem(
-                                "video",
-                                idx,
-                                "url",
-                                e.target.value,
-                              )
-                            }
-                          />
-                        </div>
-                      ))}
-                    </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="mt-1"
-                      onClick={() =>
-                        addMediaItem("video", { title: "", url: "" })
-                      }
-                    >
-                      + Add Video
-                    </Button>
-                  </div>
-
-                  {/* Action Photos */}
-                  <FormField
-                    control={form.control}
-                    name="actionPhotos"
-                    render={({ field: { onChange, ...field } }) => (
-                      <FormItem>
-                        <FormLabel>
-                          Action Photos (optional){" "}
-                          <span className="text-slate-500">
-                            – max 4 images
-                          </span>
-                        </FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Input
-                              type="file"
-                              accept={ACCEPTED_IMAGE_TYPES.join(",")}
-                              multiple
-                              onChange={(e) => {
-                                const files = e.target.files;
-                                if (!files) return;
-                                if (files.length > 4) {
-                                  toast.error(
-                                    "You can upload a maximum of 4 action photos.",
-                                  );
-                                  const dt = new DataTransfer();
-                                  Array.from(files)
-                                    .slice(0, 4)
-                                    .forEach((f) => dt.items.add(f));
-                                  onChange(dt.files);
-                                } else {
-                                  onChange(files);
-                                }
-                              }}
-                              className="hidden"
-                              id="actionPhotos"
-                              {...field}
-                            />
-                            <label
-                              htmlFor="actionPhotos"
-                              className="flex h-12 cursor-pointer items-center rounded-xl border border-slate-200 bg-white px-4"
-                            >
-                              <Upload className="mr-3 h-5 w-5 text-slate-500" />
-                              <span className="text-slate-700">
-                                {form.watch("actionPhotos")?.length
-                                  ? `${form.watch("actionPhotos").length} photo(s) selected`
-                                  : "Choose up to 4 photos"}
-                              </span>
-                            </label>
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  {/* Press Mentions */}
-                  <div className="space-y-3">
-                    <FormLabel>Press Mentions (optional)</FormLabel>
-                    <p className="text-xs text-slate-500 mb-1">
-                      For each article or feature, enter a title and a URL.
-                    </p>
-                    <div className="space-y-3">
-                      {pressItems.map((item, idx) => (
-                        <div
-                          key={idx}
-                          className="grid gap-2 md:grid-cols-2 md:gap-4"
-                        >
-                          <Input
-                            className={inputCls}
-                            placeholder="Article title"
-                            value={item.title}
-                            onChange={(e) =>
-                              updateMediaItem(
-                                "press",
-                                idx,
-                                "title",
-                                e.target.value,
-                              )
-                            }
-                          />
-                          <Input
-                            className={inputCls}
-                            placeholder="Article URL"
-                            value={item.url}
-                            onChange={(e) =>
-                              updateMediaItem(
-                                "press",
-                                idx,
-                                "url",
-                                e.target.value,
-                              )
-                            }
-                          />
-                        </div>
-                      ))}
-                    </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="mt-1"
-                      onClick={() =>
-                        addMediaItem("press", { title: "", url: "" })
-                      }
-                    >
-                      + Add Press Mention
-                    </Button>
-                  </div>
-
-                  {/* Other Media Links */}
-                  <div className="space-y-3">
-                    <FormLabel>Other Media Links (optional)</FormLabel>
-                    <p className="text-xs text-slate-500 mb-1">
-                      For podcasts, blogs, interviews, etc., use the same
-                      format: title + URL.
-                    </p>
-                    <div className="space-y-3">
-                      {otherMediaItems.map((item, idx) => (
-                        <div
-                          key={idx}
-                          className="grid gap-2 md:grid-cols-2 md:gap-4"
-                        >
-                          <Input
-                            className={inputCls}
-                            placeholder="Media title"
-                            value={item.title}
-                            onChange={(e) =>
-                              updateMediaItem(
-                                "other",
-                                idx,
-                                "title",
-                                e.target.value,
-                              )
-                            }
-                          />
-                          <Input
-                            className={inputCls}
-                            placeholder="Media URL"
-                            value={item.url}
-                            onChange={(e) =>
-                              updateMediaItem(
-                                "other",
-                                idx,
-                                "url",
-                                e.target.value,
-                              )
-                            }
-                          />
-                        </div>
-                      ))}
-                    </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="mt-1"
-                      onClick={() =>
-                        addMediaItem("other", { title: "", url: "" })
-                      }
-                    >
-                      + Add Media Link
-                    </Button>
-                  </div>
-                </CardContent>
-                <CardFooter className="flex justify-between">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={prevTab}
-                    className={pillOutline}
-                  >
-                    Back
-                  </Button>
-                  <Button onClick={nextTab} className={pillActive}>
-                    Next
-                  </Button>
-                </CardFooter>
-              </Card>
+              <SkillsAndMediaSection form={form as unknown as UseFormReturn<z.infer<typeof formSchema>>} nextTab={nextTab} prevTab={prevTab} skillsList={skillsList} setSkillsList={setSkillsList} videoItems={videoItems} setVideoItems={setVideoItems} pressItems={pressItems} setPressItems={setPressItems} otherMediaItems={otherMediaItems} setOtherMediaItems={setOtherMediaItems} />
             </TabsContent>
 
-            {/* ---------- SECTION 7: GOALS ---------- */}
             <TabsContent value="section7">
-              <Card className="border-2 border-slate-200 shadow-xl">
-                <CardHeader>
-                  <CardTitle>Section 7 of 10: Goals & Opportunities</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <FormField
-                    control={form.control}
-                    name="goals"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Current Goals (optional)</FormLabel>
-                        <p className="text-xs text-slate-500 mb-1">
-                          What are you hoping to achieve in the next 1–3 years?
-                          (e.g., play in college, go pro, improve specific
-                          skills, etc.)
-                        </p>
-                        <FormControl>
-                          <Textarea
-                            className={textareaCls}
-                            placeholder="Share your short- and long-term goals."
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="opportunities"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
-                          Are you looking for sponsorships or training
-                          opportunities?
-                        </FormLabel>
-                        <FormControl>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <SelectTrigger className="h-12 rounded-xl">
-                              <SelectValue placeholder="Select" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Yes">Yes</SelectItem>
-                              <SelectItem value="No">No</SelectItem>
-                              <SelectItem value="Maybe">Maybe</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </CardContent>
-                <CardFooter className="flex justify-between">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={prevTab}
-                    className={pillOutline}
-                  >
-                    Back
-                  </Button>
-                  <Button onClick={nextTab} className={pillActive}>
-                    Next
-                  </Button>
-                </CardFooter>
-              </Card>
+              <GoalsSection form={form as unknown as UseFormReturn<z.infer<typeof formSchema>>} nextTab={nextTab} prevTab={prevTab} />
             </TabsContent>
 
-            {/* ---------- SECTION 8: ENDORSEMENTS ---------- */}
             <TabsContent value="section8">
-              <Card className="border-2 border-slate-200 shadow-xl">
-                <CardHeader>
-                  <CardTitle>Section 8 of 10: Endorsements & Merch</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {/* Endorsements */}
-                  <FormField
-                    control={form.control}
-                    name="endorsements"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
-                          Have you received any endorsements? If so, from where?
-                          (optional)
-                        </FormLabel>
-                        <p className="text-xs text-slate-500 mb-1">
-                          Example: “Local sports shop sponsorship”, “Club
-                          endorsement”, etc.
-                        </p>
-                        <FormControl>
-                          <Textarea
-                            className={textareaCls}
-                            placeholder="List endorsements and where they are from."
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  {/* Merch / Fan Shop */}
-                  <FormField
-                    control={form.control}
-                    name="merch"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
-                          Merch / Fan Shop (optional){" "}
-                          <span className="text-slate-500">
-                            – add a URL link to your website
-                          </span>
-                        </FormLabel>
-                        <p className="text-xs text-slate-500 mb-1">
-                          Add a link to your merch store, fan shop, or online
-                          shop if you have one.
-                        </p>
-                        <FormControl>
-                          <Textarea
-                            className={textareaCls}
-                            placeholder="https://your-merch-store.com"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </CardContent>
-                <CardFooter className="flex justify-between">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={prevTab}
-                    className={pillOutline}
-                  >
-                    Back
-                  </Button>
-                  <Button onClick={nextTab} className={pillActive}>
-                    Next
-                  </Button>
-                </CardFooter>
-              </Card>
+              <EndorsementsSection form={form as unknown as UseFormReturn<z.infer<typeof formSchema>>} nextTab={nextTab} prevTab={prevTab} />
             </TabsContent>
 
-            {/* ---------- SECTION 9: CONTACT & LOGO ---------- */}
             <TabsContent value="section9">
-              <Card className="border-2 border-slate-200 shadow-xl">
-                <CardHeader>
-                  <CardTitle>Section 9 of 10: Contact & Socials</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <FormField
-                    control={form.control}
-                    name="contactEmail"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email *</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="email"
-                            className={inputCls}
-                            placeholder="Best email to contact you"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="phone"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Phone (optional)</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="tel"
-                            className={inputCls}
-                            placeholder="Phone number (if you want to share it)"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  {/* Social links split by platform */}
-                  <div className="space-y-3">
-                    <FormLabel>Social Links (optional)</FormLabel>
-                    <p className="text-xs text-slate-500 mb-1">
-                      Add your profile links for the major platforms you use.
-                    </p>
-                    <div className="grid gap-3 md:grid-cols-2">
-                      <FormField
-                        control={form.control}
-                        name={"socials.instagram" as any}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-xs text-slate-600">
-                              Instagram
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                className={inputCls}
-                                placeholder="Instagram profile URL"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name={"socials.twitter" as any}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-xs text-slate-600">
-                              Twitter / X
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                className={inputCls}
-                                placeholder="Twitter / X profile URL"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name={"socials.tiktok" as any}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-xs text-slate-600">
-                              TikTok
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                className={inputCls}
-                                placeholder="TikTok profile URL"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name={"socials.youtube" as any}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-xs text-slate-600">
-                              YouTube
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                className={inputCls}
-                                placeholder="YouTube channel URL"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name={"socials.linkedin" as any}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-xs text-slate-600">
-                              LinkedIn
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                className={inputCls}
-                                placeholder="LinkedIn profile URL"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name={"socials.other" as any}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-xs text-slate-600">
-                              Other
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                className={inputCls}
-                                placeholder="Any other social/profile URL"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Logo toggle */}
-                  <FormField
-                    control={form.control}
-                    name="hasLogo"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Do you already have a personal logo?</FormLabel>
-                        <FormControl>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <SelectTrigger className="h-12 rounded-xl">
-                              <SelectValue placeholder="Select" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Yes">Yes</SelectItem>
-                              <SelectItem value="No">No</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  {/* Logo upload appears if user says Yes */}
-                  {form.watch("hasLogo") === "Yes" && (
-                    <FormField
-                      control={form.control}
-                      name="logoUpload"
-                      render={({ field: { onChange, ...field } }) => (
-                        <FormItem>
-                          <FormLabel>
-                            Upload Logo (optional){" "}
-                            <span className="text-slate-500">
-                              – PNG / SVG / high-quality image
-                            </span>
-                          </FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <Input
-                                type="file"
-                                accept={ACCEPTED_IMAGE_TYPES.join(",")}
-                                onChange={(e) => onChange(e.target.files)}
-                                className="hidden"
-                                id="logo"
-                                {...field}
-                              />
-                              <label
-                                htmlFor="logo"
-                                className="flex h-12 cursor-pointer items-center rounded-xl border border-slate-200 bg-white px-4"
-                              >
-                                <Upload className="mr-3 h-5 w-5 text-slate-500" />
-                                <span className="text-slate-700">
-                                  {form.watch("logoUpload")?.[0]?.name ||
-                                    "Choose logo file"}
-                                </span>
-                              </label>
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  )}
-                </CardContent>
-                <CardFooter className="flex justify-between">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={prevTab}
-                    className={pillOutline}
-                  >
-                    Back
-                  </Button>
-                  <Button onClick={nextTab} className={pillActive}>
-                    Next
-                  </Button>
-                </CardFooter>
-              </Card>
+              <ContactSection form={form as unknown as UseFormReturn<z.infer<typeof formSchema>>} nextTab={nextTab} prevTab={prevTab} />
             </TabsContent>
 
-            {/* ---------- SECTION 10: UPLOADS ---------- */}
             <TabsContent value="section10">
-              <Card className="border-2 border-slate-200 shadow-xl">
-                <CardHeader>
-                  <CardTitle>Section 10 of 10: Additional Uploads</CardTitle>
-                  <CardDescription>
-                    Add any extra documents or media you want us to consider.
-                    All of these are optional.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {[
-                    {
-                      name: "resume",
-                      label: "Resume",
-                      accept: ".pdf,.doc,.docx",
-                    },
-                    {
-                      name: "references",
-                      label: "Reference Letters",
-                      multiple: true,
-                    },
-                    {
-                      name: "certifications",
-                      label: "Certifications",
-                      multiple: true,
-                    },
-                    {
-                      name: "moreMedia",
-                      label: "Extra Photos / Media",
-                      multiple: true,
-                    },
-                  ].map((f) => (
-                    <FormField
-                      key={f.name}
-                      control={form.control}
-                      name={f.name as keyof typeof form.watch}
-                      render={({ field: { onChange, ...field } }) => (
-                        <FormItem>
-                          <FormLabel>{f.label} (optional)</FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <Input
-                                type="file"
-                                accept={f.accept as any}
-                                multiple={!!f.multiple}
-                                onChange={(e) => onChange(e.target.files)}
-                                className="hidden"
-                                id={f.name}
-                                {...field}
-                              />
-                              <label
-                                htmlFor={f.name}
-                                className="flex h-12 cursor-pointer items-center rounded-xl border border-slate-200 bg-white px-4"
-                              >
-                                <Upload className="mr-3 h-5 w-5 text-slate-500" />
-                                <span className="text-slate-700">
-                                  {form.watch(f.name as any)?.length
-                                    ? `${form.watch(f.name as any).length} file(s) selected`
-                                    : "Choose file(s)"}
-                                </span>
-                              </label>
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  ))}
-                  <FormField
-                    control={form.control}
-                    name="comments"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Additional Comments (optional)</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            className={textareaCls}
-                            placeholder="Anything else you'd like us to know?"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </CardContent>
-                <CardFooter className="flex justify-between">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={prevTab}
-                    className={pillOutline}
-                  >
-                    Back
-                  </Button>
-                  <Button
-                    type="submit"
-                    disabled={loading}
-                    className={pillActive}
-                  >
-                    {loading ? "Submitting..." : "Submit Portfolio"}
-                  </Button>
-                </CardFooter>
-              </Card>
+              <UploadsSection form={form as unknown as UseFormReturn<z.infer<typeof formSchema>>} prevTab={prevTab} loading={loading} isEditMode={isEditMode} />
             </TabsContent>
           </Tabs>
         </form>

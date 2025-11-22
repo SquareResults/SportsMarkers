@@ -2,12 +2,6 @@ import Link from "next/link";
 import * as React from "react";
 
 /** --- Filled SVG icons (no external deps) --- */
-const MailSolid = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
-    <path d="M1.5 8.67V18a3 3 0 003 3h15a3 3 0 003-3V8.67l-9.28 5.8a3 3 0 01-3.44 0L1.5 8.67Z" />
-    <path d="M22.5 6.75v-.75A3 3 0 0019.5 3h-15A3 3 0 001.5 6v.75l9 5.62a1.5 1.5 0 001.68 0l9-5.62Z" />
-  </svg>
-);
 
 const PhoneSolid = (props: React.SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>

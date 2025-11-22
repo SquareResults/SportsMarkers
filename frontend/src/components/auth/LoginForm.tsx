@@ -13,6 +13,7 @@ import {
 import { useSupabase } from "@/components/SupabaseProvider";
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   InputGroup,
@@ -203,9 +204,11 @@ export function LoginForm({
 
           {/* Right column: centered logo */}
           <div className="bg-muted hidden md:grid place-items-center p-10">
-            <img
+            <Image
               src="/images/logo.png"
               alt="SportsMarkers logo"
+              width={520}
+              height={520}
               className="w-full max-w-[520px] h-auto object-contain"
             />
           </div>

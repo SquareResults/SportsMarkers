@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import Image from "next/image";
 
 type Portfolio = {
   first_name: string;
@@ -124,9 +125,11 @@ export default function ProfilePage() {
               {portfolio.logo_url && (
                 <div className="mb-6">
                   <h2 className="text-2xl font-semibold mb-4">Logo</h2>
-                  <img
+                  <Image
                     src={portfolio.logo_url}
                     alt="Logo"
+                    width={200}
+                    height={200}
                     className="w-1/2 h-auto rounded-lg"
                   />
                 </div>
@@ -281,10 +284,12 @@ export default function ProfilePage() {
                     </h2>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                       {portfolio.action_photos_urls.map((url, index) => (
-                        <img
+                        <Image
                           key={index}
                           src={url}
                           alt={`Action photo ${index + 1}`}
+                          width={200}
+                          height={200}
                           className="w-full h-auto rounded-lg shadow-md"
                         />
                       ))}
@@ -297,10 +302,12 @@ export default function ProfilePage() {
                     <h2 className="text-2xl font-semibold mb-2">More Media</h2>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                       {portfolio.more_media_urls.map((url, index) => (
-                        <img
+                        <Image
                           key={index}
                           src={url}
                           alt={`Media ${index + 1}`}
+                          width={200}
+                          height={200}
                           className="w-full h-auto rounded-lg shadow-md"
                         />
                       ))}

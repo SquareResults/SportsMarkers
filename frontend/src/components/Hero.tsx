@@ -9,7 +9,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import type { CarouselApi } from "@/components/ui/carousel";
+import Image from "next/image";
 import Autoplay from "embla-carousel-autoplay";
 import { useSupabase } from "@/components/SupabaseProvider";
 
@@ -102,9 +102,11 @@ export default function Hero() {
                                 bg-[radial-gradient(110%_100%_at_20%_0%,#15294b_0%,#0b1530_55%,#0a1226_100%)]"
                 >
                   {/* Simple <img> works fine for SVG logos */}
-                  <img
+                  <Image
                     src={slide.image}
                     alt="SportsMarkers logo"
+                    width={480}
+                    height={480}
                     className="h-auto w-[260px] sm:w-[360px] md:w-[480px] drop-shadow-[0_6px_28px_rgba(0,0,0,0.35)]"
                   />
                 </div>

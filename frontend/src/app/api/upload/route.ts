@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import s3Client from "@/lib/s3Client";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
 
 export async function POST(req: NextRequest) {
   const supabase = createServerClient(
