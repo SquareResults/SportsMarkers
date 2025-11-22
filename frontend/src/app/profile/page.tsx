@@ -7,6 +7,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import Image from "next/image";
 
 type Portfolio = {
@@ -114,9 +125,47 @@ export default function ProfilePage() {
               <p className="text-xl text-gray-600">{portfolio.sport}</p>
             </div>
           </div>
-          <Button onClick={() => router.push("/profile/edit")}>
-            Edit Profile
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={() => router.push("/profile/edit")}>
+              Edit Profile
+            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive">Delete Portfolio</Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete your
+                    portfolio and all uploaded files.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={async () => {
+                      try {
+                        const res = await fetch("/api/delete-portfolio", {
+                          method: "DELETE",
+                        });
+                        if (res.ok) {
+                          router.push("/");
+                        } else {
+                          console.error("Failed to delete portfolio");
+                        }
+                      } catch (error) {
+                        console.error("Error deleting portfolio:", error);
+                      }
+                    }}
+                    className="bg-red-600 hover:bg-red-700"
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </CardHeader>
         <CardContent>
           <Separator className="my-6" />
