@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
 
   try {
     await s3Client.send(command);
-    const fileUrl = `https://${bucketName}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
+    const fileUrl = `https://${bucketName}.s3.${process.env.REGION}.amazonaws.com/${fileName}`;
 
     const { data, error } = await supabase
       .from("files")
