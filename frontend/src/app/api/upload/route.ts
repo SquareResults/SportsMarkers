@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "No file provided" }, { status: 400 });
   }
 
-  const fileName = `${Date.now()}-${file.name}`;
+  const fileName = `${user.id}/${Date.now()}-${file.name}`;
   const bucketName = process.env.S3_BUCKET_NAME!;
 
   const command = new PutObjectCommand({
