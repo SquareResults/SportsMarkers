@@ -227,18 +227,7 @@ export default function ProfilePage() {
                   <p>{portfolio.background}</p>
                 </div>
               )}
-              {portfolio.experience && (
-                <div>
-                  <h2 className="text-2xl font-semibold mb-2">Experience</h2>
-                  <p>{portfolio.experience}</p>
-                </div>
-              )}
-              {portfolio.achievements && (
-                <div>
-                  <h2 className="text-2xl font-semibold mb-2">Achievements</h2>
-                  <p>{portfolio.achievements}</p>
-                </div>
-              )}
+              {/* Experience and achievements are complex objects - handled in edit form */}
               {portfolio.timeline && (
                 <div>
                   <h2 className="text-2xl font-semibold mb-2">Timeline</h2>
