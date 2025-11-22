@@ -113,10 +113,10 @@ function UserMenu({ user, onLogout }: { user: User; onLogout: () => void }) {
               <div className="truncate text-sm text-slate-500">{email}</div>
             )}
             <Link
-              href="/create"
+              href="/profile"
               className="mt-1 inline-block text-sm font-medium text-[#2563eb] hover:underline"
             >
-              View your portfolio
+              View your profile
             </Link>
           </div>
         </div>
@@ -126,7 +126,7 @@ function UserMenu({ user, onLogout }: { user: User; onLogout: () => void }) {
         {/* Large tappable rows */}
         <DropdownMenuItem asChild>
           <Link
-            href="/create"
+            href="/profile"
             className="flex items-center justify-between gap-3 rounded-xl px-3 py-3 hover:bg-slate-100"
           >
             <span className="flex items-center gap-3">
@@ -342,7 +342,7 @@ export default function Header() {
                 {user ? (
                   <>
                     <Link
-                      href="/create"
+                      href="/profile"
                       className="rounded-full px-4 py-2 font-semibold hover:bg-slate-100"
                     >
                       Profile

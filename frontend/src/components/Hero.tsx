@@ -3,13 +3,15 @@
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
+  type CarouselApi,
   Carousel,
   CarouselContent,
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import type { CarouselApi } from "@/components/ui/carousel";
+import { Button } from "@/components/ui/button";
+import Image from "next/image";
 import Autoplay from "embla-carousel-autoplay";
 import { useSupabase } from "@/components/SupabaseProvider";
 
@@ -102,9 +104,11 @@ export default function Hero() {
                                 bg-[radial-gradient(110%_100%_at_20%_0%,#15294b_0%,#0b1530_55%,#0a1226_100%)]"
                 >
                   {/* Simple <img> works fine for SVG logos */}
-                  <img
+                  <Image
                     src={slide.image}
                     alt="SportsMarkers logo"
+                    width={480}
+                    height={480}
                     className="h-auto w-[260px] sm:w-[360px] md:w-[480px] drop-shadow-[0_6px_28px_rgba(0,0,0,0.35)]"
                   />
                 </div>
@@ -136,19 +140,24 @@ export default function Hero() {
         </p>
 
         <div className="mt-8 flex items-center gap-4">
-          <Link
-            href={isLoggedIn ? "/create" : "/login"}
-            className="inline-flex items-center rounded-full bg-gradient-to-b from-[#32D071] to-[#20B85E] px-6 py-3 text-base font-semibold text-white shadow-md hover:opacity-95"
+          <Button
+            asChild
+            size="lg"
+            className="rounded-full bg-gradient-to-b from-[#32D071] to-[#20B85E] text-base font-semibold text-white shadow-md hover:opacity-95"
           >
-            {isLoggedIn ? "Create Portfolio" : "Get Started →"}
-          </Link>
+            <Link href={isLoggedIn ? "/create" : "/login"}>
+              {isLoggedIn ? "Create Portfolio" : "Get Started →"}
+            </Link>
+          </Button>
 
-          <Link
-            href="/athletes"
-            className="inline-flex items-center rounded-full border border-white/70 bg-white/10 px-6 py-3 text-base font-semibold text-white backdrop-blur-sm hover:bg-white/20"
+          <Button
+            asChild
+            variant="outline"
+            size="lg"
+            className="rounded-full border-white/70 bg-white/10 text-base font-semibold text-white backdrop-blur-sm hover:bg-white/20 hover:text-white"
           >
-            View Portfolios
-          </Link>
+            <Link href="/athletes">View Portfolios</Link>
+          </Button>
         </div>
 
         <div className="mt-8 flex items-center gap-2">
@@ -156,9 +165,8 @@ export default function Hero() {
             <button
               key={i}
               onClick={() => api?.scrollTo(i)}
-              className={`h-2.5 w-2.5 rounded-full transition ${
-                selectedIndex === i ? "bg-white" : "bg-white/40"
-              }`}
+              className={`h-2.5 w-2.5 rounded-full transition ${selectedIndex === i ? "bg-white" : "bg-white/40"
+                }`}
               aria-label={`Go to slide ${i + 1}`}
             />
           ))}

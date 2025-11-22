@@ -1,4 +1,6 @@
 import Section from "@/components/Section";
+import { Card, CardContent } from "@/components/ui/card";
+import { Check } from "lucide-react";
 
 export default function WhySportsMarkers() {
   return (
@@ -9,76 +11,28 @@ export default function WhySportsMarkers() {
           <p className="mt-4 text-lg text-center text-gray-600">
             Because talent alone isn’t enough. You need the right platform, the right exposure, and the right connections. SportsMarkers gives athletes the tools to:
           </p>
-          <ul className="mt-8 space-y-4 max-w-md mx-auto">
-            <li className="flex items-center gap-4">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-6 w-6 text-green-500"
-              >
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-              <span>Get noticed faster</span>
-            </li>
-            <li className="flex items-center gap-4">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-6 w-6 text-green-500"
-              >
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-              <span>Build credibility with recruiters</span>
-            </li>
-            <li className="flex items-center gap-4">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-6 w-6 text-green-500"
-              >
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-              <span>Track progress and engagement</span>
-            </li>
-            <li className="flex items-center gap-4">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-6 w-6 text-green-500"
-              >
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-              <span>Join a community that celebrates effort and achievement</span>
-            </li>
-          </ul>
+          <Card className="mt-8 max-w-md mx-auto border-emerald-100 shadow-sm">
+            <CardContent className="p-6">
+              <ul className="space-y-4">
+                <li className="flex items-center gap-4">
+                  <Check className="h-6 w-6 text-green-500" />
+                  <span>Get noticed faster</span>
+                </li>
+                <li className="flex items-center gap-4">
+                  <Check className="h-6 w-6 text-green-500" />
+                  <span>Build credibility with recruiters</span>
+                </li>
+                <li className="flex items-center gap-4">
+                  <Check className="h-6 w-6 text-green-500" />
+                  <span>Track progress and engagement</span>
+                </li>
+                <li className="flex items-center gap-4">
+                  <Check className="h-6 w-6 text-green-500" />
+                  <span>Join a community that celebrates effort and achievement</span>
+                </li>
+              </ul>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </Section>

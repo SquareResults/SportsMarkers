@@ -143,13 +143,6 @@ export default function FilterSection({
                 Clear
               </Button>
             </div>
-
-            {/* Count (kept) */}
-            <div className="flex justify-end">
-              <span className="text-sm text-slate-500">
-                {totalCount} {totalCount === 1 ? "athlete" : "athletes"} found
-              </span>
-            </div>
           </div>
         </div>
       </div>

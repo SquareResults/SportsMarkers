@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Section from "@/components/Section";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 export default function Mission() {
   return (
@@ -17,7 +18,7 @@ export default function Mission() {
                 athlete a fair shot at being seen, signed, and celebrated.
               </p>
 
-              <dl className="mt-8 grid gap-4">
+              <div className="mt-8 grid gap-4">
                 <Pillar title="Access for All">
                   Visibility tools that don’t depend on zip code or status.
                 </Pillar>
@@ -27,7 +28,7 @@ export default function Mission() {
                 <Pillar title="Share Anywhere">
                   Mobile-first links and QR codes for instant exposure.
                 </Pillar>
-              </dl>
+              </div>
             </div>
 
             {/* Image */}
@@ -64,9 +65,13 @@ function Pillar({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-emerald-200 bg-white p-4 shadow-sm">
-      <dt className="text-base font-semibold text-slate-900">{title}</dt>
-      <dd className="mt-1 text-slate-600">{children}</dd>
-    </div>
+    <Card className="border-emerald-200 shadow-sm">
+      <CardHeader className="p-4 pb-2">
+        <CardTitle className="text-base font-semibold text-slate-900">{title}</CardTitle>
+      </CardHeader>
+      <CardContent className="p-4 pt-0 text-slate-600">
+        {children}
+      </CardContent>
+    </Card>
   );
 }

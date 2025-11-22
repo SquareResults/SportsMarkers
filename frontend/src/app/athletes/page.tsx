@@ -6,10 +6,19 @@ import AthletesHero from "@/components/athletes/AthletesHero";
 import FilterSection from "@/components/athletes/FilterSection";
 import { useSupabase } from "@/components/SupabaseProvider";
 
+type Athlete = {
+  name: string;
+  sport: string;
+  position?: string;
+  location?: string;
+  avatar: string;
+  url: string;
+};
+
 export default function AthletesPage() {
   const supabase = useSupabase();
-  const [allAthletes, setAllAthletes] = useState<any[]>([]);
-  const [filteredAthletes, setFilteredAthletes] = useState<any[]>([]);
+  const [allAthletes, setAllAthletes] = useState<Athlete[]>([]);
+  const [filteredAthletes, setFilteredAthletes] = useState<Athlete[]>([]);
 
   useEffect(() => {
     const fetchPortfolios = async () => {
@@ -22,10 +31,11 @@ export default function AthletesPage() {
         const athletes = portfolios.map((portfolio) => ({
           name: `${portfolio.first_name} ${portfolio.last_name}`,
           sport: portfolio.sport,
-          position: "N/A", // The portfolios table does not have a position column
-          location: "N/A", // The portfolios table does not have a location column
           avatar: portfolio.profile_picture_url,
-          url: `/portfolio/${portfolio.id}`, // Assuming this is the URL structure
+          url: `/portfolio/${portfolio.id}`,
+          bio: portfolio.bio,
+          skills: portfolio.skills,
+          education: portfolio.educational_background,
         }));
         setAllAthletes(athletes);
         setFilteredAthletes(athletes);
@@ -34,26 +44,26 @@ export default function AthletesPage() {
     fetchPortfolios();
   }, [supabase]);
 
-  const handleFilter = (filters: any) => {
+  const handleFilter = (filters: { name?: string; sport?: string; position?: string }) => {
     let athletes = allAthletes;
 
     if (filters.name) {
       athletes = athletes.filter((athlete) =>
-        athlete.name.toLowerCase().includes(filters.name.toLowerCase()),
+        athlete.name.toLowerCase().includes(filters.name?.toLowerCase() || ""),
       );
     }
 
     if (filters.sport && filters.sport !== "all") {
       athletes = athletes.filter(
         (athlete) =>
-          athlete.sport.toLowerCase() === filters.sport.toLowerCase(),
+          athlete.sport.toLowerCase() === (filters.sport?.toLowerCase() || ""),
       );
     }
 
     if (filters.position && filters.position !== "all") {
       athletes = athletes.filter(
         (athlete) =>
-          athlete.position.toLowerCase() === filters.position.toLowerCase(),
+          athlete.position?.toLowerCase() === (filters.position?.toLowerCase() || ""),
       );
     }
 

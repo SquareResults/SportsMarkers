@@ -1,3 +1,5 @@
+import { Separator } from "@/components/ui/separator";
+
 export default function AthletesHero() {
   return (
     <section className="py-12 sm:py-16 lg:py-20 bg-gray-50">
@@ -6,6 +8,7 @@ export default function AthletesHero() {
         <p className="mt-4 text-lg text-gray-600">
           Browse profiles by sport, position, graduation year, and location.
         </p>
+        <Separator className="mt-8 max-w-xs mx-auto bg-emerald-500/30" />
       </div>
     </section>
   );

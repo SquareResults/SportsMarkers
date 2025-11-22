@@ -76,7 +76,7 @@ const TestimonialCard = ({
   <Card className="w-80 mx-4 h-64 flex flex-col justify-between rounded-3xl bg-white border border-slate-200 shadow-lg hover:shadow-2xl hover:border-emerald-300 transition-all duration-300">
     <CardContent className="p-6 flex-grow flex flex-col justify-between">
       <p className="text-base leading-relaxed text-slate-800 mb-4">
-        <span className="text-3xl font-bold text-emerald-500">"</span>
+        <span className="text-3xl font-bold text-emerald-500">&quot;</span>
         {testimonial.quote}
       </p>
       <div>
@@ -103,7 +103,7 @@ export default function Testimonials() {
       <div className="py-16 lg:py-24 bg-gray-50">
         <div className="container mx-auto px-4">
           <h2 className="text-4xl sm:text-5xl font-bold text-center text-slate-900 mb-16">
-            What they're saying
+            What they&apos;re saying
           </h2>
 
           <div className="space-y-12">

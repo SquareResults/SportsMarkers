@@ -7,6 +7,18 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import Image from "next/image";
 
 type Portfolio = {
   first_name: string;
@@ -113,9 +125,47 @@ export default function ProfilePage() {
               <p className="text-xl text-gray-600">{portfolio.sport}</p>
             </div>
           </div>
-          <Button onClick={() => router.push("/profile/edit")}>
-            Edit Profile
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={() => router.push("/profile/edit")}>
+              Edit Profile
+            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive">Delete Portfolio</Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete your
+                    portfolio and all uploaded files.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={async () => {
+                      try {
+                        const res = await fetch("/api/delete-portfolio", {
+                          method: "DELETE",
+                        });
+                        if (res.ok) {
+                          router.push("/");
+                        } else {
+                          console.error("Failed to delete portfolio");
+                        }
+                      } catch (error) {
+                        console.error("Error deleting portfolio:", error);
+                      }
+                    }}
+                    className="bg-red-600 hover:bg-red-700"
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </CardHeader>
         <CardContent>
           <Separator className="my-6" />
@@ -124,9 +174,11 @@ export default function ProfilePage() {
               {portfolio.logo_url && (
                 <div className="mb-6">
                   <h2 className="text-2xl font-semibold mb-4">Logo</h2>
-                  <img
+                  <Image
                     src={portfolio.logo_url}
                     alt="Logo"
+                    width={200}
+                    height={200}
                     className="w-1/2 h-auto rounded-lg"
                   />
                 </div>
@@ -175,18 +227,7 @@ export default function ProfilePage() {
                   <p>{portfolio.background}</p>
                 </div>
               )}
-              {portfolio.experience && (
-                <div>
-                  <h2 className="text-2xl font-semibold mb-2">Experience</h2>
-                  <p>{portfolio.experience}</p>
-                </div>
-              )}
-              {portfolio.achievements && (
-                <div>
-                  <h2 className="text-2xl font-semibold mb-2">Achievements</h2>
-                  <p>{portfolio.achievements}</p>
-                </div>
-              )}
+              {/* Experience and achievements are complex objects - handled in edit form */}
               {portfolio.timeline && (
                 <div>
                   <h2 className="text-2xl font-semibold mb-2">Timeline</h2>
@@ -281,10 +322,12 @@ export default function ProfilePage() {
                     </h2>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                       {portfolio.action_photos_urls.map((url, index) => (
-                        <img
+                        <Image
                           key={index}
                           src={url}
                           alt={`Action photo ${index + 1}`}
+                          width={200}
+                          height={200}
                           className="w-full h-auto rounded-lg shadow-md"
                         />
                       ))}
@@ -297,10 +340,12 @@ export default function ProfilePage() {
                     <h2 className="text-2xl font-semibold mb-2">More Media</h2>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                       {portfolio.more_media_urls.map((url, index) => (
-                        <img
+                        <Image
                           key={index}
                           src={url}
                           alt={`Media ${index + 1}`}
+                          width={200}
+                          height={200}
                           className="w-full h-auto rounded-lg shadow-md"
                         />
                       ))}
