@@ -67,13 +67,6 @@ interface PortfolioData {
   comments?: string;
 }
 
-function getValueOrDefault<T>(value: T | undefined | null | ""): T | undefined {
-  if (value === "" || value === null) {
-    return undefined;
-  }
-  return value as T | undefined;
-}
-
 // Helper function to safely get a string value or undefined
 function getOptionalStringValue(value: string | null | undefined): string | undefined {
   return value === null || value === undefined || (typeof value === 'string' && value.trim() === "") ? undefined : value;

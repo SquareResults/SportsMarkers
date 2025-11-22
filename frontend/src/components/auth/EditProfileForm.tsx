@@ -295,7 +295,7 @@ export default function EditProfileForm({
       };
 
       // Convert to snake_case for Supabase
-      const supabasePortfolioData: Record<string, any> = {
+      const supabasePortfolioData: Record<string, unknown> = {
         first_name: portfolioData.firstName,
         middle_name: portfolioData.middleName,
         last_name: portfolioData.lastName,
@@ -992,7 +992,7 @@ export default function EditProfileForm({
                       key={f.name}
                       control={form.control}
                       name={f.name as keyof z.infer<typeof formSchema>}
-                      render={({ field: { onChange, value, ...rest } }) => (
+                      render={({ field: { value: _value, onChange, ...field } }) => (
                         <FormItem>
                           <FormLabel>{f.label}</FormLabel>
                           <FormControl>
@@ -1004,7 +1004,7 @@ export default function EditProfileForm({
                                 onChange={(e) => onChange(e.target.files)}
                                 className="hidden"
                                 id={f.name}
-                                {...rest}
+                                {...field}
                               />
                               <label
                                 htmlFor={f.name}
@@ -1012,8 +1012,8 @@ export default function EditProfileForm({
                               >
                                 <Upload className="mr-3 h-5 w-5 text-slate-500" />
                                 <span className="text-slate-700">
-                                  {(form.watch(f.name as keyof z.infer<typeof formSchema>) as any | undefined)?.length
-                                    ? `${(form.watch(f.name as keyof z.infer<typeof formSchema>) as any).length} file(s)`
+                                  {(form.watch(f.name as keyof z.infer<typeof formSchema>) as FileList | undefined)?.length
+                                    ? `${(form.watch(f.name as keyof z.infer<typeof formSchema>) as FileList).length} file(s)`
                                     : "Choose file(s)"}
                                 </span>
                               </label>

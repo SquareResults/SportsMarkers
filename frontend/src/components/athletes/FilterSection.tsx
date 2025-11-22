@@ -21,10 +21,8 @@ type Filters = {
 
 export default function FilterSection({
   onFilter,
-  totalCount = 0,
 }: {
   onFilter: (filters: Filters) => void;
-  totalCount?: number;
 }) {
   const [name, setName] = useState("");
   const [sport, setSport] = useState("all");
