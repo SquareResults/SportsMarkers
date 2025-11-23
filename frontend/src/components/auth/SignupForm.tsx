@@ -64,15 +64,6 @@ export function SignupForm({
     router.push("/athletes");
   };
 
-  const primaryPill =
-    "h-11 px-6 rounded-full font-semibold text-white shadow-lg " +
-    "bg-primary hover:bg-primary/90 transition";
-
-  const outlinePill =
-    "h-11 px-6 rounded-full font-semibold border-2 border-primary " +
-    "text-primary hover:bg-primary/10 transition";
-
-
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       {/* Stronger card border + shadow */}
@@ -87,7 +78,7 @@ export function SignupForm({
                 </p>
               </div>
 
-              {/* More defined input borders via group rings */}
+              {/* First Name */}
               <Field>
                 <FieldLabel htmlFor="firstName">First Name</FieldLabel>
                 <InputGroup className="rounded-xl ring-1 ring-slate-300 bg-white focus-within:ring-2 focus-within:ring-primary">
@@ -107,9 +98,10 @@ export function SignupForm({
                 </InputGroup>
               </Field>
 
+              {/* Last Name */}
               <Field>
                 <FieldLabel htmlFor="lastName">Last Name</FieldLabel>
-                <InputGroup className="rounded-xl ring-1 ring-slate-300 bg-white focus-within:ring-2 focus-within:ring-emerald-500">
+                <InputGroup className="rounded-xl ring-1 ring-slate-300 bg-white focus-within:ring-2 focus-within:ring-primary">
                   <InputGroupAddon className="rounded-l-xl border-r border-slate-200">
                     <User />
                   </InputGroupAddon>
@@ -126,9 +118,10 @@ export function SignupForm({
                 </InputGroup>
               </Field>
 
+              {/* Email */}
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
-                <InputGroup className="rounded-xl ring-1 ring-slate-300 bg-white focus-within:ring-2 focus-within:ring-emerald-500">
+                <InputGroup className="rounded-xl ring-1 ring-slate-300 bg-white focus-within:ring-2 focus-within:ring-primary">
                   <InputGroupAddon className="rounded-l-xl border-r border-slate-200">
                     <Mail />
                   </InputGroupAddon>
@@ -145,9 +138,10 @@ export function SignupForm({
                 </InputGroup>
               </Field>
 
+              {/* Password */}
               <Field>
                 <FieldLabel htmlFor="password">Password</FieldLabel>
-                <InputGroup className="rounded-xl ring-1 ring-slate-300 bg-white focus-within:ring-2 focus-within:ring-emerald-500">
+                <InputGroup className="rounded-xl ring-1 ring-slate-300 bg-white focus-within:ring-2 focus-within:ring-primary">
                   <InputGroupAddon className="rounded-l-xl border-r border-slate-200">
                     <Lock />
                   </InputGroupAddon>
@@ -163,15 +157,16 @@ export function SignupForm({
                 </InputGroup>
               </Field>
 
+              {/* Buttons: Sign Up + Guest */}
               <Field>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <Button type="submit" className={primaryPill}>
+                  <Button type="submit" className="sm-login-primary">
                     Sign Up
                   </Button>
                   <Button
                     type="button"
                     onClick={handleContinueAsGuest}
-                    className={outlinePill}
+                    className="sm-login-secondary"
                   >
                     Continue as Guest
                   </Button>
@@ -183,6 +178,7 @@ export function SignupForm({
                 Or continue with
               </FieldSeparator>
 
+              {/* OAuth buttons */}
               <Field className="grid grid-cols-3 gap-4">
                 <Button
                   variant="outline"

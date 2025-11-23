@@ -369,9 +369,7 @@ header.hero,
 .animate-scroll-right { animation: scroll-right linear infinite; }
 
 /* ---------------------------
-   SOLID DROPDOWNS (new)
-   - Forces solid backgrounds for Radix popper panels (Select, Menu, Popover)
-   - Makes Select triggers (pills) solid too
+   SOLID DROPDOWNS + BUTTONS
 --------------------------- */
 @layer components {
   /* Popper content wrapper -> actual panel */
@@ -385,7 +383,7 @@ header.hero,
     isolation: isolate;
   }
 
-  /* Dark-mode variant (keep if your site supports dark theme) */
+  /* Dark-mode variant */
   .dark [data-radix-popper-content-wrapper] > div {
     background-color: rgb(15 23 42) !important; /* slate-900 */
   }
@@ -414,11 +412,29 @@ header.hero,
   [data-radix-popper-content-wrapper] > div [role="menuitem"]:hover {
     background-color: rgb(241 245 249); /* slate-100 */
   }
+
   .dark [data-radix-popper-content-wrapper] > div [role="option"]:hover,
   .dark [data-radix-popper-content-wrapper] > div [role="menuitem"]:hover {
     background-color: rgb(30 41 59); /* slate-800 */
   }
+
+  /* -----------------------------------
+     SPORTS MARKERS BUTTON SYSTEM
+     - Primary: solid green pill
+     - Secondary: white pill, green border/text
+  ------------------------------------ */
+
+  /* Base shape for all button-like elements */
+button,
+  [type="button"],
+  [type="submit"],
+  [role="button"] {
+    border-radius: 9999px;          /* pill */
+    font-weight: 600;
+    letter-spacing: var(--tracking-normal);
+  }
 }
+
 
 @theme inline {
     --font-sans: Outfit, sans-serif;
@@ -488,9 +504,9 @@ header.hero,
 @layer base {
   * {
     @apply border-border outline-ring/50;
-    }
+  }
   body {
     @apply bg-background text-foreground;
     letter-spacing: var(--tracking-normal);
-    }
+  }
 }
