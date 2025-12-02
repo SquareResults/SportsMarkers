@@ -55,7 +55,7 @@ export default function PricingSection() {
               <div className="flex items-end justify-center gap-2">
                 <span className="translate-y-2 text-3xl font-bold text-blue-500/90">$</span>
                 <span className="text-7xl font-extrabold leading-none text-blue-600 sm:text-8xl">
-                  299
+                  199
                 </span>
                 <span className="pb-3 text-lg text-blue-500/80">USD</span>
               </div>
