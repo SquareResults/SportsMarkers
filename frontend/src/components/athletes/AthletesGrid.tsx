@@ -16,6 +16,7 @@ type Athlete = {
   bio?: string;
   skills?: string[];
   education?: Array<{ school: string; graduationYear: string }>;
+  portfolio: string;
 };
 
 export default function AthletesGrid({ athletes }: { athletes: Athlete[] }) {
@@ -47,28 +48,24 @@ export default function AthletesGrid({ athletes }: { athletes: Athlete[] }) {
                 className="group overflow-hidden rounded-2xl border-0 shadow-lg ring-1 ring-black/5 transition-all hover:shadow-2xl hover:ring-primary/20"
               >
                 {/* Full-bleed top image */}
-                <Link href={athlete.url} className="block">
-                  <div className="relative aspect-[4/5] w-full overflow-hidden">
-                    <Image
-                      src={imgSrc}
-                      alt={athlete.name}
-                      fill
-                      sizes="(max-width:768px) 100vw, (max-width:1200px) 50vw, 33vw"
-                      className="object-cover transition-transform duration-700 group-hover:scale-110"
-                      priority={i < 3}
-                    />
-                    {/* Gradient overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0" />
-                  </div>
-                </Link>
+                <div className="relative aspect-[4/5] w-full overflow-hidden">
+                  <Image
+                    src={imgSrc}
+                    alt={athlete.name}
+                    fill
+                    sizes="(max-width:768px) 100vw, (max-width:1200px) 50vw, 33vw"
+                    className="object-cover transition-transform duration-700 group-hover:scale-110"
+                    priority={i < 3}
+                  />
+                  {/* Gradient overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0" />
+                </div>
 
                 {/* Content */}
                 <div className="space-y-4 p-6">
                   <div className="space-y-3">
                     <h3 className="text-2xl font-bold text-foreground tracking-tight">
-                      <Link href={athlete.url} className="hover:text-primary transition-colors">
-                        {athlete.name}
-                      </Link>
+                      {athlete.name}
                     </h3>
 
                     {/* Sport badge */}
@@ -105,7 +102,7 @@ export default function AthletesGrid({ athletes }: { athletes: Athlete[] }) {
                   </div>
 
                   <Link
-                    href={athlete.url}
+                    href={athlete.portfolio}
                     className="inline-flex w-full items-center justify-center rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
                   >
                     View Portfolio
