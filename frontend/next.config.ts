@@ -1,7 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   reactCompiler: true,
   images: {
     remotePatterns: [
@@ -21,7 +20,7 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "trial.theradarlist.com",
         port: "",
-        pathname: "/**",
+        pathname: "/assets/**",
       },
     ],
   },
