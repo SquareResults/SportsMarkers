@@ -5,6 +5,7 @@ import PricingSection from "@/components/PricingSection";
 import HowItWorks from "@/components/HowItWorks";
 import Testimonials from "@/components/Testimonials";
 import Faq from "@/components/Faq";
+import FeaturedAthletes from "@/components/FeaturedAthletes";
 
 export default function Home() {
   return (
@@ -12,6 +13,7 @@ export default function Home() {
       <Hero />
       <AboutSection />
       <CtaCards />
+      <FeaturedAthletes />
       <PricingSection />
       <HowItWorks />
       <Testimonials />

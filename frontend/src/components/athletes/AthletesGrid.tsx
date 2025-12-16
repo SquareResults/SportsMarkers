@@ -16,6 +16,7 @@ type Athlete = {
   bio?: string;
   skills?: string[];
   education?: Array<{ school: string; graduationYear: string }>;
+  portfolio: string;
 };
 
 const TRIAL_BASE = "https://trial.theradarlist.com";

@@ -21,189 +21,12 @@ import { EndorsementsSection } from "./create-profile-form/EndorsementsSection";
 import { ContactSection } from "./create-profile-form/ContactSection";
 import { UploadsSection } from "./create-profile-form/UploadsSection";
 import { formSchema } from "@/lib/formSchema";
-import { UseFormReturn } from "react-hook-form";
-
-interface PortfolioData {
-  id?: string;
-  first_name?: string;
-  middle_name?: string;
-  last_name?: string;
-  sport?: string;
-  profile_picture_url?: string;
-  bio?: string;
-  background?: string;
-  educational_background?: Array<{ school: string; graduationYear?: string }>;
-  experience?: Array<{ team: string; position?: string; explanation?: string }>;
-  achievements?: Array<{ tournament: string; medalsAwards?: string; ranking?: string }>;
-  timeline?: {
-    teams?: Array<{ name: string; startDate?: string; endDate?: string }>;
-    tournaments?: Array<{ name: string; startDate?: string; endDate?: string }>;
-  };
-  skills?: string[];
-  video_links?: Array<{ title?: string; url?: string }>;
-  action_photos_urls?: string[];
-  press?: Array<{ title?: string; url?: string }>;
-  media_links?: Array<{ title?: string; url?: string }>;
-  goals?: string;
-  opportunities?: "Yes" | "No" | "Maybe";
-  endorsements?: string;
-  merch?: string;
-  contact_email?: string;
-  phone?: string;
-  socials?: {
-    instagram?: string;
-    twitter?: string;
-    tiktok?: string;
-    youtube?: string;
-    linkedin?: string;
-    other?: string;
-  };
-  has_logo?: boolean;
-  logo_url?: string;
-  resume_url?: string;
-  references_url?: string;
-  certifications_url?: string;
-  more_media_urls?: string[];
-  comments?: string;
-}
-
-// Helper function to safely get a string value or undefined
-function getOptionalStringValue(value: string | null | undefined): string | undefined {
-  return value === null || value === undefined || (typeof value === 'string' && value.trim() === "") ? undefined : value;
-}
-
-// Helper function to safely get a required string value (defaults to empty string)
-function getRequiredStringValue(value: string | null | undefined): string {
-  return value === null || value === undefined ? "" : value;
-}
-
-
-function transformPortfolioToFormData(portfolio: PortfolioData): z.infer<typeof formSchema> {
-  const defaultFormValues: z.infer<typeof formSchema> = {
-    firstName: "",
-    middleName: undefined,
-    lastName: "",
-    sport: "",
-    profilePicture: undefined,
-    bio: undefined,
-    background: undefined,
-    educationalBackground: undefined,
-    journeyTeams: undefined,
-    journeyAchievements: undefined,
-    timelineTeams: undefined,
-    timelineTournaments: undefined,
-    skills: undefined,
-    videoLinks: undefined,
-    actionPhotos: undefined,
-    press: undefined,
-    mediaLinks: undefined,
-    goals: undefined,
-    opportunities: "",
-    endorsements: undefined,
-    merch: undefined,
-    contactEmail: "",
-    phone: undefined,
-    socials: undefined,
-    hasLogo: "",
-    logoUpload: undefined,
-    resume: undefined,
-    references: undefined,
-    certifications: undefined,
-    moreMedia: undefined,
-    comments: undefined,
-  };
-
-  if (!portfolio) {
-    return defaultFormValues;
-  }
-
-  const timeline = portfolio.timeline || {};
-
-  // Parse Experience (Journey Teams)
-  let journeyTeams: Array<{ team: string; position?: string; explanation?: string }> | undefined = undefined;
-  if (Array.isArray(portfolio.experience)) {
-    journeyTeams = portfolio.experience;
-  } else if (portfolio.experience && typeof portfolio.experience === 'object') {
-    // It's an object/map from DB: { "Team Name (Position)": "Explanation" }
-    journeyTeams = Object.entries(portfolio.experience).map(([key, value]) => {
-      // Try to extract position from "Team Name (Position)"
-      const match = key.match(/^(.*?)\s*\((.*?)\)$/);
-      if (match) {
-        return {
-          team: match[1].trim(),
-          position: match[2].trim(),
-          explanation: value as string,
-        };
-      }
-      return {
-        team: key.trim(),
-        position: "",
-        explanation: value as string,
-      };
-    });
-  }
-
-  // Parse Achievements
-  let journeyAchievements: Array<{ tournament: string; medalsAwards?: string; ranking?: string }> | undefined = undefined;
-  if (Array.isArray(portfolio.achievements)) {
-    journeyAchievements = portfolio.achievements;
-  } else if (portfolio.achievements && typeof portfolio.achievements === 'object') {
-    // It's an object/map from DB: { "Tournament": ["Medal", "Ranking"] }
-    journeyAchievements = Object.entries(portfolio.achievements).map(([key, value]) => {
-      const details = Array.isArray(value) ? value : [];
-      return {
-        tournament: key.trim(),
-        medalsAwards: details[0] || "",
-        ranking: details[1] || "",
-      };
-    });
-  }
-
-  return {
-    ...defaultFormValues, // Start with defaults
-    firstName: getRequiredStringValue(portfolio.first_name),
-    middleName: getOptionalStringValue(portfolio.middle_name),
-    lastName: getRequiredStringValue(portfolio.last_name),
-    sport: getRequiredStringValue(portfolio.sport),
-    profilePicture: undefined,
-    bio: getOptionalStringValue(portfolio.bio),
-    background: getOptionalStringValue(portfolio.background),
-
-    educationalBackground: portfolio.educational_background?.length ? portfolio.educational_background : undefined,
-
-    journeyTeams: journeyTeams,
-    journeyAchievements: journeyAchievements,
-
-    timelineTeams: timeline.teams?.length ? timeline.teams : undefined,
-    timelineTournaments: timeline.tournaments?.length ? timeline.tournaments : undefined,
-
-    skills: getOptionalStringValue(portfolio.skills?.join(", ")),
-    videoLinks: portfolio.video_links?.length ? (portfolio.video_links as Array<{ title: string; url: string }>) : undefined,
-    press: portfolio.press?.length ? (portfolio.press as Array<{ title: string; url: string }>) : undefined,
-    mediaLinks: portfolio.media_links?.length ? (portfolio.media_links as Array<{ title: string; url: string }>) : undefined,
-
-    goals: getOptionalStringValue(portfolio.goals),
-    opportunities: portfolio.opportunities || "",
-
-    endorsements: getOptionalStringValue(portfolio.endorsements),
-    merch: getOptionalStringValue(portfolio.merch),
-
-    contactEmail: getRequiredStringValue(portfolio.contact_email),
-    phone: getOptionalStringValue(portfolio.phone),
-    socials: portfolio.socials || undefined,
-    hasLogo: portfolio.has_logo === true ? "Yes" : (portfolio.has_logo === false ? "No" : ""),
-    logoUpload: undefined,
-    resume: undefined,
-    references: undefined,
-    certifications: undefined,
-    moreMedia: undefined,
-    comments: getOptionalStringValue(portfolio.comments),
-  };
-}
+import { Tables } from "@/types/database.types";
+import { transformPortfolioToFormData } from "@/lib/portfolioUtils";
 
 /* ---------- Component ---------- */
 interface CreateProfileFormProps extends React.ComponentProps<"div"> {
-  portfolio?: PortfolioData;
+  portfolio?: Tables<"portfolios">;
 }
 
 export function CreateProfileForm({
@@ -657,43 +480,43 @@ export function CreateProfileForm({
             </div>
 
             <TabsContent value="section1">
-              <BasicInfoSection form={form as unknown as UseFormReturn<z.infer<typeof formSchema>>} nextTab={nextTab} />
+              <BasicInfoSection form={form} nextTab={nextTab} />
             </TabsContent>
 
             <TabsContent value="section2">
-              <BioBackgroundSection form={form as unknown as UseFormReturn<z.infer<typeof formSchema>>} nextTab={nextTab} prevTab={prevTab} />
+              <BioBackgroundSection form={form} nextTab={nextTab} prevTab={prevTab} />
             </TabsContent>
 
             <TabsContent value="section3">
-              <EducationalBackgroundSection form={form as unknown as UseFormReturn<z.infer<typeof formSchema>>} nextTab={nextTab} prevTab={prevTab} />
+              <EducationalBackgroundSection form={form} nextTab={nextTab} prevTab={prevTab} />
             </TabsContent>
 
             <TabsContent value="section4">
-              <JourneySection form={form as unknown as UseFormReturn<z.infer<typeof formSchema>>} nextTab={nextTab} prevTab={prevTab} />
+              <JourneySection form={form} nextTab={nextTab} prevTab={prevTab} />
             </TabsContent>
 
             <TabsContent value="section5">
-              <TimelineSection form={form as unknown as UseFormReturn<z.infer<typeof formSchema>>} nextTab={nextTab} prevTab={prevTab} />
+              <TimelineSection form={form} nextTab={nextTab} prevTab={prevTab} />
             </TabsContent>
 
             <TabsContent value="section6">
-              <SkillsAndMediaSection form={form as unknown as UseFormReturn<z.infer<typeof formSchema>>} nextTab={nextTab} prevTab={prevTab} skillsList={skillsList} setSkillsList={setSkillsList} videoItems={videoItems} setVideoItems={setVideoItems} pressItems={pressItems} setPressItems={setPressItems} otherMediaItems={otherMediaItems} setOtherMediaItems={setOtherMediaItems} />
+              <SkillsAndMediaSection form={form} nextTab={nextTab} prevTab={prevTab} skillsList={skillsList} setSkillsList={setSkillsList} videoItems={videoItems} setVideoItems={setVideoItems} pressItems={pressItems} setPressItems={setPressItems} otherMediaItems={otherMediaItems} setOtherMediaItems={setOtherMediaItems} />
             </TabsContent>
 
             <TabsContent value="section7">
-              <GoalsSection form={form as unknown as UseFormReturn<z.infer<typeof formSchema>>} nextTab={nextTab} prevTab={prevTab} />
+              <GoalsSection form={form} nextTab={nextTab} prevTab={prevTab} />
             </TabsContent>
 
             <TabsContent value="section8">
-              <EndorsementsSection form={form as unknown as UseFormReturn<z.infer<typeof formSchema>>} nextTab={nextTab} prevTab={prevTab} />
+              <EndorsementsSection form={form} nextTab={nextTab} prevTab={prevTab} />
             </TabsContent>
 
             <TabsContent value="section9">
-              <ContactSection form={form as unknown as UseFormReturn<z.infer<typeof formSchema>>} nextTab={nextTab} prevTab={prevTab} />
+              <ContactSection form={form} nextTab={nextTab} prevTab={prevTab} />
             </TabsContent>
 
             <TabsContent value="section10">
-              <UploadsSection form={form as unknown as UseFormReturn<z.infer<typeof formSchema>>} prevTab={prevTab} loading={loading} isEditMode={isEditMode} />
+              <UploadsSection form={form} prevTab={prevTab} loading={loading} isEditMode={isEditMode} />
             </TabsContent>
           </Tabs>
         </form>

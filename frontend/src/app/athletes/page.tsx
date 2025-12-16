@@ -13,6 +13,10 @@ type Athlete = {
   location?: string;
   avatar: string;
   url: string;
+  portfolio: string;
+  bio?: string;
+  skills?: string[];
+  education?: Array<{ school: string; graduationYear: string }>;
 };
 
 export default function AthletesPage() {
@@ -33,6 +37,7 @@ export default function AthletesPage() {
           sport: portfolio.sport,
           avatar: portfolio.profile_picture_url,
           url: `/portfolio/${portfolio.id}`,
+          portfolio: portfolio.portfolio_url,
           bio: portfolio.bio,
           skills: portfolio.skills,
           education: portfolio.educational_background,
